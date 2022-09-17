@@ -1,0 +1,174 @@
+\documentclass[a4paper, landscape , 8pt]{scrartcl}
+
+% use language german
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, ngerman]{babel} % \selectlanguage{english} if  needed
+\usepackage{lmodern} % use modern latin fonts
+
+% format
+\usepackage{geometry}
+\geometry{top=1.2cm,left=0.4cm,right=0.4cm}
+\textheight = 558pt
+
+%autor
+\usepackage{authblk}
+
+%tabular
+\usepackage{tabularx}
+
+% math
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{enumitem}
+
+% graphic
+\usepackage{graphicx}
+\graphicspath{{graphic/}} 
+
+%colors
+% \usepackage{xcolor}
+
+% Multi Columns
+\usepackage{multicol}
+
+%compact items
+\setlist{topsep=0pt, leftmargin=4mm, nolistsep}
+\setlength{\parindent}{0cm}
+
+%define header and footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+\fancyhead[RO]{\AUTHOR| \INSTITUTE}
+\fancyhead[LO]{\TITLE}
+\fancyfoot[RO]{09.01.2022}
+\renewcommand\headrulewidth{0pt}
+\renewcommand\footrulewidth{0pt}
+\headsep = -2pt
+\footskip = 0pt
+
+
+% Define Section Format
+\usepackage{sectsty}
+\usepackage{titlesec}
+\usepackage[dvipsnames]{xcolor}
+
+\titleformat{name=\section}[block]{\sffamily\normalsize}{}{0pt}{\colorsection}
+\titlespacing*{\section}{0pt}{0pt}{0pt}
+\newcommand{\colorsection}[1]{%
+	\colorbox{sectioncolor!80}{\parbox{0.98\linewidth}{\vspace{-1pt}\color{white}\ #1 \vspace{-2pt}}}}
+
+% Define Subsection Format
+\titleformat{name=\subsection}[block]{\sffamily\small}{}{0pt}{\colorsubsection}
+\titlespacing*{\subsection}{0pt}{0pt}{0pt}
+\newcommand{\colorsubsection}[1]{%
+	\colorbox{subsectioncolor!80}{\parbox{0.98\linewidth}{\vspace{-1pt}\color{black}\ #1 \vspace{-2pt}}}}
+
+% Define SubSubsection Format
+\titleformat{name=\subsubsection}[block]{\sffamily\small}{}{0pt}{\colorsubsubsection}
+\titlespacing*{\subsubsection}{0pt}{0pt}{0pt}
+\newcommand{\colorsubsubsection}[1]{%
+	\colorbox{subsubsectioncolor!60}{\parbox{0.98\linewidth}{\vspace{-1pt}\color{black}\ #1 \vspace{-2pt}}}}
+
+
+%define color
+\definecolor{sectioncolor}{HTML}{052639}
+\definecolor{subsectioncolor}{HTML}{468189}
+\definecolor{subsubsectioncolor}{HTML}{8DB9B1}
+\definecolor{b}{RGB}{0, 115, 192 } %Default highlight color
+\definecolor{p}{RGB}{0, 43, 54} %Dark page color
+\definecolor{t}{RGB}{131, 148, 150} %Dark text color
+\definecolor{darkgreen}{RGB}{0,150,0}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{DarkPurple}{rgb}{0.4, 0.1, 0.4}
+\definecolor{DarkCyan}{rgb}{0.0, 0.5, 0.4}
+\definecolor{LightLime}{rgb}{0.3, 0.5, 0.4}
+\definecolor{Blue}{rgb}{0.0, 0.0, 1.0}
+\definecolor{h}{RGB}{1, 101, 163}
+
+% Code Listings
+\usepackage{listings}
+\usepackage{color}
+\usepackage{beramono}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    linkcolor={black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\definecolor{bluekeywords}{rgb}{0,0,1}
+\definecolor{greencomments}{rgb}{0,0.5,0}
+\definecolor{redstrings}{rgb}{0.64,0.08,0.08}
+\definecolor{xmlcomments}{rgb}{0.5,0.5,0.5}
+\definecolor{types}{rgb}{0.17,0.57,0.68}
+
+\lstdefinestyle{eclipse-style}{
+	language=Java,
+	showstringspaces=false,     
+	basicstyle=\ttfamily\scriptsize,
+	keywordstyle=\color{RoyalBlue}\ttfamily,
+    stringstyle=\color{darkgreen}\ttfamily,
+	commentstyle=\color{DarkPurple!60}\ttfamily,
+	escapeinside={£}{£}, % latex scope within code      
+	breaklines=true,
+	breakatwhitespace=true,
+	showspaces=false,
+	showtabs=false,
+	tabsize=2,
+	morekeywords={length},
+	numbers=none,
+	numberstyle=\tiny\color{black},
+	frame=none,
+	aboveskip = 0em,
+	belowskip = 0em
+}
+\lstset{
+	style=eclipse-style
+	% literate=  % Allow for German characters in lstlistings.
+	% {Ö}{{\"O}}1
+	% {Ä}{{\"A}}1
+	% {Ü}{{\"U}}1
+	% {ü}{{\"u}}1
+	% {ä}{{\"a}}1
+	% {ö}{{\"o}}1}
+}
+
+% Theorems \begin{mytheo}{title}{label}
+\usepackage{tcolorbox}
+\tcbuselibrary{theorems}
+\newtcbtheorem[number within=section]{definiton}{Definition}%
+{fonttitle=\bfseries}{def}
+\newtcbtheorem[number within=section]{remember}{Merke}%
+{fonttitle=\bfseries}{rem}
+\newtcbtheorem[number within=section]{hint}{Hinweis}%
+{fonttitle=\bfseries}{hnt}
+
+% Front page
+\newcommand{\AUTHOR}{Marius Zindel \& Mona Panchaud }
+\newcommand{\INSTITUTE}{Ostschweizer Fachhochschule}
+
+%dotted rule
+\usepackage{dashrule}
+\usepackage{tikz}
+\usetikzlibrary{decorations.markings}
+\newcommand{\drule}[3][0]{
+	\tikz[baseline]{\path[decoration={markings,
+	mark=between positions 0 and 1 step 2*#3
+	with {\node[fill, circle, minimum width=#3, inner sep=0pt, anchor=south west] {};}},postaction={decorate}]  (0,#1) -- ++(#2,0);}}
+
+
+%no indentation
+\setlength{\parindent}{0cm}
+
+
+% no vertical distribution
+% explanation: we copy the macro columnbreak to stdcolumnbreak
+% we now redefine columnbreak to always fill up null space and then execute the standard columnbreak.
+\let\stdcolumnbreak\columnbreak
+\renewcommand\columnbreak{\vfill\null\stdcolumnbreak}

@@ -1,0 +1,871 @@
+%import template
+\input{./template.tex}
+
+% DocInfo
+\newcommand{\SUBJECT}{}
+\newcommand{\TITLE}{Cheat Sheet Objektorientierte Programmierung}
+
+\begin{document}
+
+%import front page
+% \input{./front.tex}
+
+%do multicols
+\begin{multicols*}{5}
+    \setlength{\columnseprule}{0.4pt}
+		\footnotesize
+		
+%import tableofcontents
+% \input{./tableofcontents.tex}
+
+\section{Allgemeines}
+	\subsection{Primitive Datentypen}
+		\begin{tabular}{p{.7cm} | p{2.1cm} | l}
+			boolean&Boolescher Wert&true, false\\
+			char&Textzeichen&'a','B','0','ë',...\\
+			byte&Ganzzahl 8 Bit&-128 - 127\\
+			short&Ganzzahl 16 Bit&-32'768 - 32'767\\
+			int&Ganzzahl 32 Bit&-$2^{31}$ - $2^{31}$-1\\
+			long&Ganzzahl 64 Bit&-$2^{63}$ - $2^{63}$-1, 1L\\
+			float&Kommazahl 32 Bit&0.1f, 2e4f\\
+			double&Kommazahl 64 Bit&0.1, 2e4\\
+		\end{tabular}
+		\subsubsection{Specials}
+		\begin{lstlisting}
+a[double - int] // cannot convert double to int
+0/0 -> ArithmeticException div by zero
+3.0/0 -> Double.POSITIVE_INFINITY
+f + "" != f -> f ist null
+g+1 == g+2 -> g=Double.POSITIVE_INFINITY
+h != h -> h = Float.NaN/Double.NaN
+1 % 0 -> ArithmeticException div by zero
+0 % 1 -> 0
+int<long<float -> Compiler-Fehler
+0.0 / 0.f -> NaN (Double.NaN)
+x + 1 == x -> Double.POSITIVE_INFINITY
+d++ == --d -> true
+Math.abs(x - y) < delta // floats vergleichen
+		\end{lstlisting}
+
+	\subsection{Call by value/reference}
+		\begin{itemize}
+			\item Call by Value: Kopie von Wert/Referenz
+			\item Call by Reference: Werte können verändert werden
+			\item Java kann nur Call by Value
+		\end{itemize}
+	
+	\subsection{Sichtbarkeit}
+		\begin{itemize}
+			\item Sichtbarkeit darf erweitert werden
+			\item \tiny \textcolor{b}{\texttt{public}}
+				\footnotesize : Alle Klassen
+			\item \tiny \textcolor{b}{\texttt{protected}}
+				\footnotesize : Packages und alle Sub-Klassen
+			\item \tiny \textcolor{b}{\texttt{private}}
+				\footnotesize : Nur eigene und äussere \textbf{Klasse} (nicht Objekt)
+			\item \tiny kein Keyword
+				\footnotesize : Alle Klassen im selben Package
+		\end{itemize}
+	
+	
+	\subsection{final}
+		\begin{itemize}
+			\item \textbf{Attribute}: nicht veränderbar
+			\item \textbf{Methoden}: nicht überschreibbar
+			\item \textbf{Klassen}: nicht erbbar
+		\end{itemize}
+	
+	\subsection{equals}
+		\begin{itemize}
+			\item \tiny \textcolor{b}{\texttt{equals()}} 
+				\footnotesize ist standardmässig nur Referenzvergleich
+			\item Inhaltlicher Vergleich: Bei \textbf{string} schon implementiert, 
+			aber bei \textbf{Arrays} nicht!
+			\item Immer auch hashCode() überschreiben.
+		\end{itemize}
+	
+	\subsection{hashCode}
+		\begin{itemize}
+			\item Zwei gleiche Objekte = gleicher HashCode
+			\item Umkehrung gilt nicht unbedingt
+			\item Ungleiche Objekte können gleichen HashCode haben
+		\end{itemize}
+	
+
+	\subsection{Overloading, Overriding \& Hiding}
+	\begin{enumerate}
+		\item Statischer Typ (links) für Overloading
+		\item (null) $\rightarrow$ spezifischster wählen
+		\item Dynamischer Typ (rechts) für Overriding
+	\end{enumerate}
+	\textbf{Overloading:} Gleiche Methode wird mit anderem Typ überschrieben.\\
+	\textbf{Overriding:} Gleiche Methode wird 1:1 überschrieben. (@Override)
+	
+	Beachte noch folgendes Beispiel:
+	\begin{lstlisting}
+class Base { 
+	public String name = "Base";
+}
+class Sub extends Base {
+	public String name = "Sub";
+	
+	void x(Base other) {
+		var x = name // "Sub"
+		var y = other.name // "Base"
+	}
+}
+Base b = new Sub();
+var x = b.name // "Base" !
+	\end{lstlisting}
+	
+	\columnbreak
+	
+	\subsection{Imports und Packages}
+		\subsubsection{Import on Demand}
+		\begin{itemize}
+			\item \tiny \textcolor{b}{\texttt{import drawing.figures.*}} \footnotesize
+			\item Alle public-Deklarationen im Paket (Wildcard)
+			\item Keine Sub-Packages davon
+		\end{itemize}
+		\subsubsection{Single Type Import}
+		\begin{itemize}
+			\item \tiny \textcolor{b}{\texttt{import drawing.figures.Rectangle}} \footnotesize
+			\item Nur Klasse Rectangle des Packages
+			\item Hat Vorrang gegen{\"u}ber Import on Demand
+		\end{itemize}
+	
+	
+	\subsection{Exceptions}
+	\begin{lstlisting}
+String method(String s) throws Exception {
+if (s == null) {
+	throw new Exception("String is null"); 
+} 
+		\end{lstlisting}
+		
+		\subsubsection{Exceptions behandeln}
+		\begin{lstlisting}
+try {
+	 /* regular code */ 
+}  catch (Exception e) {
+	/* error handling */
+} finally {
+	/* e.g. cleanup */ 
+}
+		\end{lstlisting}
+		\subsubsection{Eigene Exceptions}
+		\begin{lstlisting}
+class StringClipException extends Exception {
+	public StringClipException() {}
+	public StringClipException(String message) {
+		super(message); }}
+//------------------in Methode:------------------
+String clip(String s) throws StringClipException {
+	if (s == null) {
+	throw new StringClipException("no string"); } }
+		\end{lstlisting}
+		\subsubsection{Checked und Unchecked Exceptions}
+		\textcolor{b}{Checked Exceptions:}
+		\begin{itemize}
+			\item Exception muss behandelt werden (catch)
+			\item \textbf{throws}-Deklaration im Methodenkopf
+			\item Wird vom Compiler geprüft
+			\item \tiny \texttt{ClassNotFoundExc., IllegalAccessExc., EigeneExc.}
+		\end{itemize}
+		\textcolor{b}{Unchecked Exceptions}
+		\begin{itemize}
+			\item Keine throws-Deklaration/Behandlung nötig
+			\item Wird nicht vom Compiler geprüft
+			\item \tiny \texttt{RuntimeException, NullPointerException, IndexOutOfBoundsException, Error}
+		\end{itemize}
+		
+	
+\section{Vererbung}
+	\subsubsection{Abstract Class}
+	\begin{lstlisting}
+public abstract class Vehicle {
+	//Vererbbare Methoden....
+	public abstract void drive();
+	\end{lstlisting}
+	\subsubsection{Erbende Klassen von Klassen}
+	\begin{lstlisting}
+public class Car extends Vehicle {
+	@Override
+	public void drive() {
+	System.out.println("Car");
+	//Ausfuehren der Vatermethode wenn nicht abstract
+	super.drive(); 
+	\end{lstlisting}
+	\subsubsection{Erben von Interfaces}
+	\begin{lstlisting}
+public class RegularCar implements Vehicle {...}
+	\end{lstlisting}
+
+
+
+
+\section{Interfaces}
+	\subsection{Allgemeines}
+	\begin{itemize}
+		\item Facette einer Klasse
+		\item Trennung Spezifikation und Implementation
+		\item Lollipop oder Hierarchische Mehrfachvererbung
+		\item Nur Klassen sind instanzierbar
+		\item Schnittstellen sind aber als statische Typen verwendbar (linke Seite)
+		\item Variablen in Interfaces sind Konstanten!
+		\item Keine Instanzvariablen im Interface
+	\end{itemize}
+	\subsection{Vererbung}
+		\subsubsection{Interface $\rightarrow$ Interface}
+			\begin{lstlisting}
+public interface Vehicle{...}
+public interface LandMobile extends Vehicle{...}
+			\end{lstlisting}
+		\subsubsection{Interface $\rightarrow$ Klasse}
+			\begin{lstlisting}
+public interface Vehicle{...}
+public class Car implements Vehicle{...}
+			\end{lstlisting}
+	
+	
+	\columnbreak
+	
+	
+	\subsection{Default Methods}
+	\begin{itemize}
+		\item Falls Kollisionen bei Mehrfachvererbung 
+		\item Ähnlich zu Mehrfachvererbung von abstrakten Klassen
+		\item Keine Instanzvariablen in Schnittstelle!
+		\item Methoden können in Klasse überschrieben werden
+		\item Falls nicht überschrieben: Defaultmethode
+	\end{itemize}
+		\begin{lstlisting}
+interface Vehicle {
+	public default void printModel() {...method...}
+		\end{lstlisting}
+
+
+
+
+
+	\section{Collections}
+	\subsection{Array}
+		\begin{lstlisting}
+	// possible array inits:
+	var array = new int[] { 1, 2, 3};
+	int array[] = { 1, 2, 3 };
+	var array = new int[3]; // empty
+	
+		\end{lstlisting}
+	
+	\subsection{List}
+		\subsubsection{ArrayList}
+			\begin{itemize}
+				\item Duplikate möglich
+				\item null ist auch einfügbar
+				\item Add/Remove während Iterierens $\rightarrow$ Fehler
+				\item get(), set(), add(): sehr schnell
+				\item remove(), contains(): langsam
+			\end{itemize}
+			\begin{lstlisting}
+ArrayList<String> stringList = new ArrayList<>();
+List.of(array); // Create list out of array
+	stringList.add("OO"); //Add Element
+	stringList.add(0, "Bsys1"); //Add @ pos 0
+	String x = stringList.get(1); //get @ pos 1
+	stringList.set(0, "Bsys2"); //replace at pos 0
+	boolean b = stringList.contains("CN1")
+	stringList.remove("ICTh");
+	stringList.remove(1); //remove @ pos 1
+			\end{lstlisting}
+
+		\subsubsection{LinkedList}
+		\begin{itemize}
+			\item Verkettete Liste der Elemente
+			\item Duplikate möglich
+			\item Dynamisch hinzufügbar und entfernbar
+			\item Intern Doppelt verkettet
+			\item add(), remove(anfang/ende) sehr schnell
+			\item get(), set(), contains(), remove() langsam
+		\end{itemize}
+		\begin{lstlisting}
+List<String> firstList = new LinkedList<>();
+	//Gleiche Funktionen wie ArrayList
+		\end{lstlisting}
+	
+	
+		\subsubsection{Queue / Deques}
+		\begin{itemize}
+			\item Verkettete Liste der Elemente
+			\item Dynamisch hinzufügbar und entfernbar
+			\item LIFO oder FIFO möglich
+			\item Intern Doppelt verkettet
+		\end{itemize}
+		\begin{lstlisting}
+Deque<String> queue = new LinkedList<>();
+	queue.addLast(elem);
+	queue.addFirst(elem);
+	queue.removeFirst(elem);
+	queue.removeLast(elem);
+		\end{lstlisting}
+
+	\subsubsection{Stack}
+	\begin{lstlisting}
+		var stack = new Stack<E>();
+		var poppedEl = stack.pop();
+		var pushedItem = stack.push(el);
+		var isEmpty = stack.empty();
+	\end{lstlisting}
+
+
+	\subsection{Set}
+		\begin{itemize}
+			\item Für loop: enhanced for verwenden
+		\end{itemize}
+		\subsubsection{HashSet}
+		\begin{itemize}
+			\item Keine Duplikate
+			\item Unsortiert 
+			\item \textbf{Oft} sehr effizient
+			\item In Hashtabelle gespeichert
+			\item Elemente geben hashCode() konsistent zu equals()
+		\end{itemize}
+		\begin{lstlisting}
+Set<String> otherSet = new HashSet<>();
+Set<String> s = new HashSet<>(list);
+	set.add(elem);
+	set.addAll(list); //Collection of elem
+	set.size();
+	set.remove(elem);
+	set.isEmpty();
+	set.contains(elem)
+	String[] a = (String[]) set.toArray();
+		\end{lstlisting}
+		\subsubsection{TreeSet}
+		\begin{itemize}
+			\item Keine Duplikate
+			\item Sortiert
+			\item \textbf{immer} effizient
+			\item In Binärbäumen gespeichert
+			\item Elemente implementieren Comparable und equals()
+		\end{itemize}
+		\begin{lstlisting}
+Set<String> firstSet = new TreeSet<>();
+	//Gleiche Funktionen wie HashSet
+		\end{lstlisting}
+	
+	\subsection{Map}
+		\subsubsection{TreeMap}
+		\begin{itemize}
+			\item Mengen von Schlüssel-Wert-Paaren
+			\item Nach Schlüssel sortiert
+			\item immer effizient
+		\end{itemize}
+		\begin{lstlisting}
+Map<Integer, String> bachelors = new TreeMap<>();
+	map.put(20000, "Hello");
+	map.containsKey(key);
+	map.containsValue(value);
+	String x = map.get(20000);
+	for (int number : map.keySet()) { 
+		// print all keys
+		System.out.println(number);
+	}
+	for (String value : map.values()) { 
+		// print all values
+		System.out.println(value);
+	}
+		\end{lstlisting}
+		\subsubsection{HashMap}
+		\begin{itemize}
+			\item Mengen von Schlüssel-Wert-Paaren
+			\item Unsortiert
+			\item oft sehr effizient
+		\end{itemize}
+		\begin{lstlisting}
+Map<Integer, String> map = new HashMap<>();
+// Gleiche Funktionen wie TreeMap
+		\end{lstlisting}
+
+
+\section{Stream API}
+	\subsection{Zwischenoperationen}
+		\begin{itemize}
+			\item \tiny \textcolor{b}{\texttt{filter(Predicate)}}
+				\footnotesize Rauspicken gem. Predicate
+			\item \tiny \textcolor{b}{\texttt{map(Function)}}
+				\footnotesize Projizieren gemäss Function
+			\item \tiny \textcolor{b}{\texttt{mapToInt(Function)}}
+				\footnotesize Proji. auf primitiver Typ
+			\item \tiny \textcolor{b}{\texttt{sorted()}}
+				\footnotesize Sortieren
+			\item \tiny \textcolor{b}{\texttt{distinct}}
+				\footnotesize Duplikate werden gelöscht
+			\item \tiny \textcolor{b}{\texttt{limit(long n)}}
+				\footnotesize Erste n Elemente liefern
+			\item \tiny \textcolor{b}{\texttt{skip(long n)}}
+				\footnotesize Erste n Elemente ignorieren
+		\end{itemize}
+	\subsection{Terminaloperationen}
+		\begin{itemize}
+			\item \tiny \textcolor{b}{\texttt{forEach(Consumer)}}
+				\footnotesize Pro Element anwenden
+			\item \tiny \textcolor{b}{\texttt{forEachOrderd(consumer)}}
+				\footnotesize Erhält die Reihenfolge der Elemente
+			\item \tiny \textcolor{b}{\texttt{count()}}
+				\footnotesize Anzahl Elemente als long
+			\item \tiny \textcolor{b}{\texttt{min(), max()}}
+				\footnotesize Mit Comparator Argument ausser schon korrekt gemapped. Als Optional.
+			\item \tiny \textcolor{b}{\texttt{average()}}
+				\footnotesize Nur bei int, long, double. Als Optional.
+			\item \tiny \textcolor{b}{\texttt{sum()}}
+				\footnotesize Nur bei int, long, double.
+			\item \tiny \textcolor{b}{\texttt{findAny()}}
+				\footnotesize Gibt irgendein Element als Optional
+			\item \tiny \textcolor{b}{\texttt{findFirst()}}
+				\footnotesize Gibt erstes Element als Optional
+		\end{itemize}
+	\subsection{Optional}
+		\begin{itemize}
+			\item \tiny \textcolor{b}{\texttt{isPresent()}}
+				\footnotesize true wenn Element vorhanden ist
+			\item \tiny \textcolor{b}{\texttt{isEmpty()}}
+				\footnotesize true wenn \textbf{kein} Element vorhanden ist
+			\item \tiny \textcolor{b}{\texttt{get()}}
+				\footnotesize Gibt Element. \textbf{Exception} wenn empty.
+		\end{itemize}
+	\subsection{Rückumwandlung}
+		\textcolor{b}{Zu Array:}
+		\begin{lstlisting}
+Person[] arr = peopleStream.toArray(Person[]::new);
+		\end{lstlisting}
+		\textcolor{b}{Zu List}
+		\begin{lstlisting}
+List<Person> list = peopleStream.toList();
+		\end{lstlisting}	
+	
+		\subsection{Lambda Beispiele}
+	\begin{lstlisting}
+Arrays.stream(people) // Array zu stream
+
+stream().forEach(System.out::println); // alles ausgeben
+
+stream().sort((p1, p2) -> 
+Integer.compare(p1.getAge(), p2.getAge()))
+
+stream().filter(p -> p.getAge() >= 18)
+
+stream().filter(p -> p instanceof House)
+
+stream().filter(p -> p.getGender
+.equals(Gender.FEMALE))
+
+stream().map(p -> p.getName()) // to String
+
+stream().mapToInt(i -> i).sum(); // Sum
+	\end{lstlisting}
+	\columnbreak % Kind of a hack
+	\begin{lstlisting}
+// Top 10 earner
+people.stream()
+.sorted(Comparator.comparing(
+Person::getSalary).reversed())
+.mapToInt(p -> p.getSalary())
+.limit(10)
+
+
+// get Max Age from People in Zurich
+people.stream()
+.filter(p -> p.getCity().equals("Zuerich"))
+.mapToInt(p -> p.getAge())
+.max()
+.getAsInt();
+
+// get Average Age of Male
+var x = people.stream()
+.filter((p) -> p.getGender().equals(Gender.MALE))
+.mapToInt(p -> p.getAge())
+.average();
+
+// Get all female Names with 3 or less Characters
+people.stream()
+.filter((p) -> p.getGender().equals(Gender.FEMALE) 
+&& p.getFirstName().length() <= 3)
+.map(p -> p.getFirstName())
+
+// Durchschnittsalter pro Ort (mittels Collector)
+people.stream()
+.collect(Collectors.groupingBy(Person::getCity, Collectors.averagingInt(Person::getAge)))
+.forEach((city, age) -> 
+	System.out.println(city + " " + age));
+
+// Gruppieren
+Map<Integer, List<Person>> peopleByAge = 
+people.stream()
+.collect(Collectors.groupingBy(Person::getAge));
+		
+	\end{lstlisting}
+	
+	\subsubsection{Stream Beispiele}
+	\begin{lstlisting}
+people.stream().map(p->p.name)
+IntStream.range(1, 100) // Zahlen von bis 100
+Stream.of(2,3,5,7) // Eigene Aufzaehlung
+Stream.concat(stream1, stream2) // 1 gefolgt von 2
+	\end{lstlisting}
+
+
+\section{Beispiele}
+
+	\subsubsection{Switch - Case}
+	\begin{lstlisting}
+int x = 5; 
+switch(x) {
+	case 2: 
+		System.out.println("2"); 
+		break;
+	case 5: 
+		System.out.println("5"); 
+		break;
+	default: 
+		System.out.println("No match!"); 
+}
+	\end{lstlisting}
+
+	\subsubsection{for loop}
+	\begin{lstlisting}
+	for(int i = 0; i < list.size(); i++) {}
+	
+	for(var el : list) {}
+	
+	for(var el : set) {}
+	
+	for(var el : map.entrySet()) {
+		var k = el.getKey();
+		var v = el.getValue();
+	}
+	\end{lstlisting}
+
+	\subsubsection{Main Methode}
+	\begin{lstlisting}
+	public static void main(String[] args) {...}	
+	\end{lstlisting}
+
+	\subsubsection{Interface}
+	\begin{lstlisting}
+	public interface GraphicItem {
+		Vector getLocation();
+		void move(Vector delta);
+		
+		// A default implementation:
+		default void moveToCenter() {
+			var pos = getLocation();
+			move(new Vector(-pos.getX(), -pos.getY()));
+		}
+	}
+	\end{lstlisting}
+
+	\columnbreak
+
+	\subsubsection{Alle Wörter aus Buchstaben generieren}
+		\begin{lstlisting}
+Set<String> generateWords(Set<Character> input) { 
+	Set<String> result = new HashSet<>();
+	if (input.size() == 0) { 
+		result.add(""); 
+	}
+	for (Character letter : input) {
+		Set<Character> remainder = new HashSet<>(input); 
+		remainder.remove(letter);
+		for (String word : generateWords(remainder)) {
+			result.add(word + letter);
+		}
+	}
+	return result;
+}
+		\end{lstlisting}
+	
+	\subsubsection{Substring / Split}
+		\begin{lstlisting}
+int number = Integer.parseInt(line.substring(0, 3));
+String name = line.substring(4);
+String a = "1234 10"; 
+String[] c = a.split(" ");
+		\end{lstlisting}
+
+
+	\subsubsection{Podcast}
+	\begin{lstlisting}
+class Chapter {
+	// Constructor..., Attributes...
+	public int getLength() {
+		return content.length;
+	}
+}
+public class Podcast {
+	// Constructor..., Attributes...
+	public int getLength() {
+		int sum = 0;
+		for (var chapter : chapters) {
+			sum += chapter.getLength();
+		}
+		return sum;
+	}
+}
+public class PodcastMaker {
+	static ArrayList<byte[]> splitIntoChapters(byte[] recording, int[] chapterMarks) {
+		var result = new ArrayList<byte[]>();
+		var previousChapterEnd = 0;
+		
+		for (int nextChapterEnd : chapterMarks) {
+			var nextChapter = Arrays.copyOfRange(recording, previousChapterEnd, nextChapterEnd);
+			result.add(nextChapter);
+			previousChapterEnd = nextChapterEnd;
+		}
+		
+		var lastChapter = Arrays.copyOfRange(recording, previousChapterEnd, recording.length);
+		result.add(lastChapter);
+		return result;
+	}
+	static Podcast createPodcast(ArrayList<byte[]> chapters) {
+		var chapterObjects = new ArrayList<Chapter>();
+		for (var chapter : chapters) {
+			chapterObjects.add(new Chapter(chapter));
+		}
+		return new Podcast(chapterObjects);
+	}
+}
+	\end{lstlisting}
+
+	\subsubsection{toString mit Indent}
+	\begin{lstlisting}
+	// Vaterklasse:
+	public abstract String toString(int indent);			
+	
+	@Override
+	public String toString() {
+		return toString(0);}
+	
+	protected String getIndent(int length) { 
+		String text = ""; 
+		for (int i = 0; i < length; i++) { 
+			text += " ";
+		}
+		return text;
+	}
+	// Erbende Klasse:
+	@Override
+	public String toString(int indent) {
+		String text = getIndent(indent) + getName() +"\n";
+		for (Food food : ingredients) {
+			text += food.toString(indent + 1);
+		}
+		return text; }
+	\end{lstlisting}
+
+	\subsubsection{Erastothenes}
+		\begin{lstlisting}
+// The numbers in the sieve start with 2,
+// so we reduce the array length accordingly.
+int[] sieve = new int[PRIMES_UP_TO - 1];
+for(int i = 0; i < sieve.length; i++) {
+	sieve[i] = i + 2;
+}
+
+// Now let's look at each number in the array:
+for(int i = 0; i < sieve.length; i++) {
+	int primeNumber = sieve[i];
+	
+	// Has the number already been crossed out?
+	if(primeNumber == -1) {
+		continue;
+	}
+	
+	int numberToCross = primeNumber * 2;
+	while(numberToCross <= PRIMES_UP_TO) {
+		// Since the numbers and indices differ
+		// by two, we have to calculate the index:
+		int indexToCross = numberToCross - 2;
+		// An int[] always needs to contain a valid
+		// int, we can't really cross an item, but
+		// instead set a special value:
+		sieve[indexToCross] = -1;
+		// And we continue with the next number:
+		numberToCross += primeNumber;
+	}
+}
+		\end{lstlisting}
+	
+	
+	\subsubsection{Custom 'Linked List'}
+	\begin{lstlisting}
+public class Car {
+	private Car next;
+	// ...
+}
+public class Locomotive {
+	private Car first;
+	// ...
+}
+public class Train {
+	private Locomotive locomotive;
+	public Train() {
+		locomotive = new Locomotive();
+	}
+	
+	public void add(String name) {
+		Car first = locomotive.getFirst();
+		Car newCar = new Car(name);
+		newCar.setNext(first);
+		locomotive.setFirst(newCar);
+	}
+	
+	public boolean insert(int position, String name) {
+		if (position == 0) {
+			add(name);
+			return true;
+		}
+		Car leadingCar = getCar(position - 1);
+		if (leadingCar == null) {
+			return false;
+		}
+		Car followingCar = leadingCar.getNext();
+		Car newCar = new Car(name);
+		leadingCar.setNext(newCar);
+		newCar.setNext(followingCar);
+		return true;
+	}
+	
+	public void reverse() {
+		Car previousCar = null;
+		Car currentCar = locomotive.getFirst();
+		while (currentCar != null) {
+			Car nextCar = currentCar.getNext();
+			currentCar.setNext(previousCar);
+			previousCar = currentCar;
+			currentCar = nextCar;
+		}
+		locomotive.setFirst(previousCar);
+	}
+	
+	public Car removeFirst() {
+		Car firstCar = locomotive.getFirst();
+		if (firstCar != null) {
+			locomotive.setFirst(firstCar.getNext());
+		}
+		return firstCar;
+	}
+}
+	\end{lstlisting}
+	
+	\subsection{compareTo}
+	
+	\subsubsection{Compare To}
+		\begin{lstlisting}
+@FunctionalInterface
+interface Comparable<T> {
+	int compareTo(T other); }
+
+class Person implements Comparable<Person> {
+	private int age;
+	@Override 
+	public int compareTo(Person other) {
+		return Integer.compare(age, other.age); }
+	//oder
+	@Override 
+	public int compareTo(Person other) {
+		int result = lastName.compareTo(other.lastName);
+		if (result == 0) {
+			result = firstName.compareTo(other.firstName); } 
+		return result;}}
+		//oder
+		people.sort(this::compareByAge);//in Methode
+		//oder
+		(p1, p2) -> p1.compareTo(p2)
+		\end{lstlisting}
+	
+	
+	
+	\subsubsection{Comparator}
+		\begin{lstlisting}
+class AgeComparator implements Comparator<Person> {
+	@Override
+	public int compare(Person first, Person second){
+		return Integer.compare(first.getAge(), second.getAge() ); }
+		\end{lstlisting}
+	
+	\subsubsection{Comparable}
+		\begin{lstlisting}
+class Person implements Comparable<Person> {
+	//.....
+	@Override
+	public int compareTo(Person other){
+		int result = lastName.compareTo(other.lastName);
+		if (result == 0){ 
+		 result = firstName.compareTo(other.firstName);}
+		return result;}
+		\end{lstlisting}
+
+	\subsection{equals}
+		
+		\begin{lstlisting}
+@Override
+public boolean equals(Object obj) {
+	if (obj == null) {
+		return false;
+	}
+	if (getClass() != obj.getClass()) {
+		return false;
+	}
+	if (!super.equals(obj)) {
+		return false;
+	}
+	Person other = (Person) obj;
+	return Objects.equals(getFirstName(), other.getFirstName()) 
+		&& Objects.equals(getLastName(), other.getLastName());
+}
+		\end{lstlisting}
+	
+	\subsection{hashCode}
+		\begin{lstlisting}
+@Override
+public int hashCode() {
+	return Objects.hash(firstName, lastName);
+}
+		\end{lstlisting}
+	
+	
+	\subsection{Enum}
+	\begin{lstlisting}
+public enum Weekday {
+	MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY 
+	
+	public boolean isWeekend() {
+		return this== SATURDAY || this== SUNDAY;
+	}
+}
+	\end{lstlisting}
+
+
+	
+	\subsection{Diverses Rekursives}
+	\subsubsection{Palindrom}
+	\begin{lstlisting}
+printPalindroms("", "", 0, 5); //in Main
+
+void printPalindroms(String prefix, String suffix, int pos, int length) {
+	if (pos == (length + 1) / 2) {
+		System.out.println(prefix + suffix);
+	} else {
+		boolean middle = position == length / 2;
+		for (char c = 'A'; c <= 'Z'; c++) {
+			printPalindroms(prefix + c, middle ? 
+			suffix : c + suffix, position + 1, length);
+		}}}
+	\end{lstlisting}
+
+\end{multicols*}
+
+% \input{./appendix.tex}
+
+\end{document}
