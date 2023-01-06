@@ -69,14 +69,33 @@ Operanden müssen gleich gross sein.
 % (e.g. arithmetic operations)
 % see saved pages
 
-\section{C-Toolchain}
+% TODO take a look later if that is still correct
+\subsection{Flags}
+CF \& OF werden immer beide von CPU bestimmt.
+
+Carry Flag (CF) == Überlauf bei \textbf{unsigned} Arithmetik
+
+0001 + 1111 = 0000, CF = 1 --> 1 + 15 = 0, CF = 1
+
+Overflow Flag (OF) == Überlauf bei \textbf{signed} Arithmetik
+
+0111 + 0001 = 1000 -> 7 + 1 = -8 (negative prefix)
+
+Zero Flag (ZF) == set when result is 0
+
+Sign Flag == is the highest bit of the result
+
+Parity Flag (PF) == set if lowest byte has even number of bits
+
+\section{C}
+\subsection{C-Toolchain}
 \begin{enumerate}
     \item \textbf{C Präprozessor} -> Bereinigte C-Quelle
     \item \textbf{C Compiler} -> Assembler Datei
     \item \textbf{Assembler} -> Objekt Datei
     \item \textbf{Linker} -> Executable
 \end{enumerate}
-\subsection{Präprozessor}
+\subsubsection{Präprozessor}
 \begin{enumerate}
     \item Kommentare entfernen \& \ Zeilen zusammensetzen
     \item In Tokens aufteilen (Whitespace, bei a+b nicht nötig, String wird nicht aufgeteilt).
@@ -91,31 +110,36 @@ Operanden müssen gleich gross sein.
     \end{lstlisting}
 \end{enumerate}
 
-\subsection{Compiler}
-    Eine C-Datei -> Eine Assemblerdatei
+\subsubsection{Compiler}
+Eine C-Datei -> Eine Assemblerdatei
 
-    Bezeichner dürfen beliebig oft \underline{deklariert} (int y;) werden. Nur 1x \underline{definiert} (int y = 5;).
+Bezeichner dürfen beliebig oft \underline{deklariert} (int y;) werden. Nur 1x \underline{definiert} (int y = 5;).
 
-    \textbf{static}: Variable, die nicht exportiert werden soll
+\textbf{static}: Variable, die nicht exportiert werden soll
 
-    \begin{lstlisting}[language=c]
+\begin{lstlisting}[language=c]
 extern int x; static int x = 5; // Error:
 // static Deklaration folgt auf non-static
-    \end{lstlisting}
+\end{lstlisting}
 
-    Für globale Var wird Speicher fix reserviert. Grösse hängt von Typ ab. globale Var werden exportiert.
+Für globale Var wird Speicher fix reserviert. Grösse hängt von Typ ab. globale Var werden exportiert.
 
-\subsection{Linker}
+\subsubsection{Linker}
 Mehrere Assemblerdateien -> Ein Executable
 
-\section{C}
 \subsection{Typen, sizeof(t)}
 Typinfos nur auf C Sprachlevel
 
 Size infos are dependent on architecture
 
-% TODO take a look at this again and explain it
-Umwandlung von negativer Binärzahl: Zweierkomplement
+\subsection{Vorzeichen}
+Bei signed MSB: 0=positiv, 1=negativ
+
+Umwandlung von negativer Binärzahl:
+
+Zweierkomplement bilden -> flip + 1
+
+-> 1010 -> 0101 -> 0110
 
 \subsection{Pointers}
 
@@ -147,6 +171,8 @@ not: !q | and: q \&\& p | or: q || p
 
 \subsection{Arithmetische Operationen}
 z = x + y -> falls Überlauf: verpufft (kein Carry)
+
+
 
 \end{multicols*}
 \end{document}
