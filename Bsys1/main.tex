@@ -19,14 +19,38 @@ P. kann nur über Speicherbus mit Umwelt interagieren!
     \item P. aktiviert Speicherbus zum Lesen
     \item Speicher legt Daten auf Datenbus
 \end{enumerate}
+OpCode: \includegraphics[width=0.1\textwidth]{opcode.png}
 
-\section{Memory}
+\section{Numbers}
+\begin{description}
+    \item[db] Byte, 8 Bit
+    \item[dw] Word, 2 Byte, 16 Bit
+    \item[dd] Doubleword, 4 Byte, 32 Bit
+    \item[dq] Quadword, 8 Byte, 64 Bit
+    \item [Double Quadword] 16 Byte, 128 Bit
+\end{description}
+
+\section{Byte Order}
+Stellen innerhalb Bytes werden nicht vertauscht!
+\begin{description}
+    \item[Big-Endian] CA | FE
+    \item[Little-Endian] FE | CA
+\end{description}
 
 \begin{lstlisting}[language={[x86masm]Assembler}]
-mov rax, [0x8000] ; ok move 8000h into rax
-mov [0x8000], rax ; ok move value at rax into 0x8000
-mov rax, rbx      ; ok move rbx into rax, no memory access!!
-mov [0x8000], [0x7000] ; error can't move memory to memory!!
+text_length: dq after_my_text - my_text
+my_text: db 'BSys 1'
+after_my_text:
+\end{lstlisting}
+
+\section{Memory}
+\begin{lstlisting}[language={[x86masm]Assembler}]
+mov rax, [0x8000] ; move 8000h into rax
+mov [0x8000], rax ; move val at rax into 0x8000
+; move rbx into rax, no memory access:
+mov rax, rbx
+; error can't move memory to memory:
+mov [0x8000], [0x7000]
 \end{lstlisting}
 
 \section{Einführung und Modulübersicht}
