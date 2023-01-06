@@ -21,7 +21,7 @@ P. kann nur über Speicherbus mit Umwelt interagieren!
 \end{enumerate}
 OpCode: \includegraphics[width=0.1\textwidth]{opcode.png}
 
-\section{Numbers}
+\section{Numbers in Assembly}
 \begin{description}
     \item[db] Byte, 8 Bit
     \item[dw] Word, 2 Byte, 16 Bit
@@ -33,154 +33,120 @@ OpCode: \includegraphics[width=0.1\textwidth]{opcode.png}
 \section{Byte Order}
 Stellen innerhalb Bytes werden nicht vertauscht!
 \begin{description}
-    \item[Big-Endian] CA | FE
-    \item[Little-Endian] FE | CA
+    \item[Big-Endian] CA | FE -> MSB ist erstes Bit
+    \item[Little-Endian] FE | CA -> LSB ist erstes Bit
 \end{description}
 
+\section{Labels}
 \begin{lstlisting}[language={[x86masm]Assembler}]
 text_length: dq after_my_text - my_text
 my_text: db 'BSys 1'
 after_my_text:
 \end{lstlisting}
 
+\section{Register}
+\begin{tabular}{llllll}
+    63..0 & 31..0 & 15..0 & 15..8 & 7..0\\
+    \hline
+    RAX & EAX & AX & AH & AL\\
+\end{tabular}
+
+\textbf{Weitere:} RCX, RDX, RBX, RSI, RDI, RSP, RBP, R8-R15
+
 \section{Memory}
 \begin{lstlisting}[language={[x86masm]Assembler}]
 mov rax, [0x8000] ; move 8000h into rax
+mov rbx, [rax] ; address is in the register rax
 mov [0x8000], rax ; move val at rax into 0x8000
 ; move rbx into rax, no memory access:
 mov rax, rbx
 ; error can't move memory to memory:
 mov [0x8000], [0x7000]
 \end{lstlisting}
+Operanden müssen gleich gross sein.
 
-\section{Einführung und Modulübersicht}
-Ein Computer besteht aus Prozessoren, Hauptspeicher und Ein- und Ausgabegeräten. Das Betriebssystem verwaltet diese Ressourcen.
+% TODO: More Assembly constructs
+% (e.g. arithmetic operations)
+% see saved pages
 
-BILD: Grundmodell eines Computers
+\section{C-Toolchain}
+\begin{enumerate}
+    \item \textbf{C Präprozessor} -> Bereinigte C-Quelle
+    \item \textbf{C Compiler} -> Assembler Datei
+    \item \textbf{Assembler} -> Objekt Datei
+    \item \textbf{Linker} -> Executable
+\end{enumerate}
+\subsection{Präprozessor}
+\begin{enumerate}
+    \item Kommentare entfernen \& \ Zeilen zusammensetzen
+    \item In Tokens aufteilen (Whitespace, bei a+b nicht nötig, String wird nicht aufgeteilt).
 
-FMC-Modeling: Ecking - Aktiv, Rund - Passiv
+    Bildet grösstmögliches Token
+    \item Präprozessor Direktiven ausführen (include, if, ...)
 
-Literatur:
+    \& Makros expandieren
+    \begin{lstlisting}[language=c]
+#define XYZ 123
+// XYZ wird im Folgenden mit 123 ersetzt
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Compiler}
+    Eine C-Datei -> Eine Assemblerdatei
+
+    Bezeichner dürfen beliebig oft \underline{deklariert} (int y;) werden. Nur 1x \underline{definiert} (int y = 5;).
+
+    \textbf{static}: Variable, die nicht exportiert werden soll
+
+    \begin{lstlisting}[language=c]
+extern int x; static int x = 5; // Error:
+// static Deklaration folgt auf non-static
+    \end{lstlisting}
+
+    Für globale Var wird Speicher fix reserviert. Grösse hängt von Typ ab. globale Var werden exportiert.
+
+\subsection{Linker}
+Mehrere Assemblerdateien -> Ein Executable
+
+\section{C}
+\subsection{Typen, sizeof(t)}
+Typinfos nur auf C Sprachlevel
+
+Size infos are dependent on architecture
+
+% TODO take a look at this again and explain it
+Umwandlung von negativer Binärzahl: Zweierkomplement
+
+\subsection{Pointers}
+
+\begin{lstlisting}[language=c]
+int a = 42;
+int *b = &a; // b pointer to a
+a = *b + 1; // a = dereference b and add 1
+\end{lstlisting}
+Incrementing a pointer will skip \textbf{sizeof(t)} Bytes!
+
+\subsection{Numbers in C}
 \begin{itemize}
-    \item Glatz, Betriebssysteme, 3. Auflage
-    \item Tanenbaum, Modern Operating Systems, 4th Edition
-    \item Silberschatz, Operating Systems, 9th Edition
-    \item NASM Docs, C-Teil von cppreference.com
+    \item Decimal: 0..9 with \textbf{NO 0 at the start}
+    \item Octal: 0..7 with a \textbf{leading 0}
+    \item Hex: 0..F with \textbf{leading 0x}
+    \item Suffix: the suffic specifies a type:
+
+    l: long, ll: long long, u: unsigned, ul: unsigned long
 \end{itemize}
 
-\section{Prozessor}
-Merkvarianten-Analogie: Gedächtnis für wichtige Informationen, Papier für weniger wichtige Informationen. Gehirn ist eine kostbare Ressource, Papier ist preiswerter. Gleich ist dies mit dem Prozessor (Gedächtnis) und Speicher (Papier).
+\subsection{Bitwise Operators}
+Werden Bit per Bit angewendet:
 
-Kommunikationsprotokoll (Beispiel mit fenstern)
+not: \~{}q | and: q \& p | or: q | p
 
-Speicherzellen sind nicht direkt an den Prozessor angebunden, es werden Adressen verwendet. Konzeptionell befindet sich ein Speicherbus dazwischen. Der Prozessor kennt nur den Bus. Dieser besteht aus Adressbus (unidirektional vom Prozessor aus), Datenbus (bidirektional, lesen/schreiben) und Steuersignalen (unidirektional vom Prozessor aus).
+left shift: q << p ($* 2^m$) | right shift: q >> p ("$/ 2^m$")
+\subsection{Logische Operatoren}
+not: !q | and: q \&\& p | or: q || p
 
-\subsection{Lesen/Schreiben}
-SIEHE FOLIE 14
-
-"Der Prozessor kann nur über den Speicherbus mit seiner Umwelt interagieren."
-
-"Register sind nicht im Hauptspeicher, sondern innerhalb des Prozessors."
-
-\begin{description}
-    \item[Register]
-    \item[Operation]
-    \item[Instruction Pointer]
-\end{description}
-
-SEQUENZEN VON INSTRUKTIONEN SIEHE FOLIE 22
-
-"Instruktionen sind von Hersteller zu Hersteller unterschiedlich. Die Gesamtheit aller Instruktionen eines Prozessors ist sein Maschinencode."
-
-Prozessor-Zyklus (Abstraktion) FOLIE 27
-
-    \section{Assembler}
-    \subsection{Maschinencode}
-    Prozessor arbeitet auf Bitebene. Intel 64 - Little Endian - 64 bit
-
-    Intel Terms:
-    \begin{description}
-        \item[Byte] 8 bit
-        \item[Word] 16 bit / 2 Byte
-        \item[Doubleword] 32 bit / 4 Byte
-        \item[Quadword] 64 bit / 8 Byte
-        \item[Double Quadword] 128 bit / 16 Byte
-    \end{description}
-
-    Kleinste Einheit eines Intel-Prozessors: 8 Bit (1 Byte) - Ein Register (64 Bit) braucht also immer 8 Adressen. Ein einzelnes Bit lässt sich nicht adressieren!
-
-    Byte Order:
-
-    \subsection{Assembler}
-    \begin{description}
-        \item[Assembler] "Zusammensetzer" Übersetzer in Maschinencode
-        \item[Assembly] die Sprache
-        \item[db] DataByte: Zahl in Output schreiben (z.B. db 48 / db 0x35 / db 'Hello')
-        \item[dw, dd, dq] Word, DWord, QWord
-        \item[nop] 90h
-    \end{description}
-
-    \subsection{Referenzen in Assembler}
-    Auf eine andere Stelle im Text verweisen.
-
-    \subsection{Ausgabedateien}
-    Flat-Form Binaries (plain, pure, raw), Wir brauchen aber Objekt-Dateien (Byte-Sequenz mit Zusatzinformationen, z.B. Symboltabelle/Labels)
-
-    \section{Variablen}
-    \subsection{Intel64 Register}
-    \begin{description}
-        \item[RAX] Accumulator, für einige Rechenoperationen das einzig mögliche Register
-        \item[RCX] Counter für Schleifen und Stringoperationen
-        \item[RDX] Pointer für I/O-Operationen
-        \item[RBX] Datenpointer
-        \item[RSI, RDI] Quell- (Source) und Zielindizes (Destination) für Stringoperationen
-        \item[RSP] Stackpointer, Adresse des allozierten Stacks
-        \item[RBP] Basepointer, Adresse innerhalb des Stacks, Basis des Rahmens der Funktion
-        \item[R8-R15] Zusätzliche Register
-    \end{description}
-
-    \begin{tabular}{llllll}
-      Nr. & 63..0 & 31..0 & 15..0 & 15..8 & 7..0\\
-      \hline
-      0 & RAX & EAX & AX & AH & AL\\
-      1 & RCX & ECX & CX & CH & CL\\
-      2 & RDX & EDX & DX & DH & DL\\
-      3 & RBX & EBX & BX & BH & BL\\
-      \hline
-      4 & RSP & ESP & BP & - & SPL\\
-      5 & RBP & EBP & BP & - & BPL\\
-      6 & RSI & ESI & SI & - & SIL\\
-      7 & RDI & EDI & DI & - & DIL\\
-      \hline
-      8 & R8 & R8D & R8W & - & R8L\\
-      .. & .. & .. & .. & - & ..\\
-      15 & R15 & R15D & R15W & - & R15L
-    \end{tabular}
-
-    Move-Operation (mov)
-    \begin{description}
-        \item[mov rax, rbx] Setze Inhalt von rax gleich rbx
-        \item[mov rax, 0x8000] Setze Inhalt von rax gleich 8000h
-        \item[mov rax, [0x8000]] Setze inhalt von rax gleich Inhalt von 8000h \dots 8007h
-    \end{description}
-
-    Assembler leitet den richtigen maschinencode aus der grösse des Registers ab.
-
-    \section{C Toolchain}
-    \begin{description}
-        \item[C Präprozessor] verarbeitet C-Quelle, z.B. \texttt{includes}. Durchlauf 1: Kommentare entfernen, multi-liner to oneline. Durchlauf 2: Tokenization (Bezeichner (beginnt mit Buchstaben oder \_, gefolgt von Zeugs), Prärozessor-Zahlen (beginnt mit einer Ziffer, gefolgt von Ziffern, Buchstaben, \_ oder Exponenten), String- und Character-Literale (Anführungs und Schullzeichen von Strings), Operatoren und Satzzeichen (Greedy), Sonstige), Whitespace trennt tokens. Durchlauf 3: Präprozessod-Direktiven (z.B. \texttt{includes}, prepend mit hashtag) ausführen, Makros durch Expansion ersetzen (Objektartige (ohne Parameter) und Funktionsartige Makros, textersetzung, welche auch witzige formen z.B. int x = XYZ annehmen kann, aber nicht Rekursiv)
-        \item[C Compiler] verarbeitet bereinigte C-Quelle (a.k.a \emph{Translation Unit}) (übersetzt \emph{eine} bereinige C-Datei in \emph{eine} Assembler-Datei, die bereinigte C-Datei enthält nur gültige C-Ausdrücke)
-        \item[C Translation Unit] Folge von Deklarationen und Definitionen
-        \item[Deklaration] Verknüpft einen Bezeichner Compiler-Intern mit einem Typen.
-        \item[Definition] Umfasst auch immer eine Deklaration, legt aber auch den entsprechenden Speicher an.
-        \item[Globale Variablen]
-        \item[static] "Antiglobal"
-        \item[Assembler] verarbeitet Assembler-Datei
-        \item[Linker] verarbeitet Objektdateien zu Executables (viele Fehler)
-    \end{description}
-
-    \subsection{Includes}
-    \texttt{<stdio.h>} sucht nur in den Systemverzeichnissen, \texttt{"stdio.h"} sucht erst im aktuellen Verzeichnis und dann in den anderen. Wenn vom Präprozessor gefunden, werden die drei Schritte des Präprozessors auch darauf ausgeführt (Farhad: Aufruf Rekursiv?)
+\subsection{Arithmetische Operationen}
+z = x + y -> falls Überlauf: verpufft (kein Carry)
 
 \end{multicols*}
 \end{document}
