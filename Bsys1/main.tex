@@ -1,0 +1,145 @@
+\input{./ost-summary-template.tex}
+
+\newcommand{\TITLE}{Betriebssysteme 1}
+\newcommand{\AUTHOR}{Mona Panchaud}
+\newcommand{\INSTITUTE}{Ostschweizer Fachhochschule}
+\begin{document}
+\begin{multicols*}{4}
+
+\section{Prozessor}
+\textbf{schreiben}:
+\begin{enumerate}
+    \item Prozessor legt Adresse auf Adressbus \& Daten auf Datenbus
+\end{enumerate}
+
+\section{Einführung und Modulübersicht}
+Ein Computer besteht aus Prozessoren, Hauptspeicher und Ein- und Ausgabegeräten. Das Betriebssystem verwaltet diese Ressourcen.
+
+BILD: Grundmodell eines Computers
+
+FMC-Modeling: Ecking - Aktiv, Rund - Passiv
+
+Literatur:
+\begin{itemize}
+    \item Glatz, Betriebssysteme, 3. Auflage
+    \item Tanenbaum, Modern Operating Systems, 4th Edition
+    \item Silberschatz, Operating Systems, 9th Edition
+    \item NASM Docs, C-Teil von cppreference.com
+\end{itemize}
+
+\section{Prozessor}
+Merkvarianten-Analogie: Gedächtnis für wichtige Informationen, Papier für weniger wichtige Informationen. Gehirn ist eine kostbare Ressource, Papier ist preiswerter. Gleich ist dies mit dem Prozessor (Gedächtnis) und Speicher (Papier).
+
+Kommunikationsprotokoll (Beispiel mit fenstern)
+
+Speicherzellen sind nicht direkt an den Prozessor angebunden, es werden Adressen verwendet. Konzeptionell befindet sich ein Speicherbus dazwischen. Der Prozessor kennt nur den Bus. Dieser besteht aus Adressbus (unidirektional vom Prozessor aus), Datenbus (bidirektional, lesen/schreiben) und Steuersignalen (unidirektional vom Prozessor aus).
+
+\subsection{Lesen/Schreiben}
+SIEHE FOLIE 14
+
+"Der Prozessor kann nur über den Speicherbus mit seiner Umwelt interagieren."
+
+"Register sind nicht im Hauptspeicher, sondern innerhalb des Prozessors."
+
+\begin{description}
+    \item[Register]
+    \item[Operation]
+    \item[Instruction Pointer]
+\end{description}
+
+SEQUENZEN VON INSTRUKTIONEN SIEHE FOLIE 22
+
+"Instruktionen sind von Hersteller zu Hersteller unterschiedlich. Die Gesamtheit aller Instruktionen eines Prozessors ist sein Maschinencode."
+
+Prozessor-Zyklus (Abstraktion) FOLIE 27
+
+    \section{Assembler}
+    \subsection{Maschinencode}
+    Prozessor arbeitet auf Bitebene. Intel 64 - Little Endian - 64 bit
+
+    Intel Terms:
+    \begin{description}
+        \item[Byte] 8 bit
+        \item[Word] 16 bit / 2 Byte
+        \item[Doubleword] 32 bit / 4 Byte
+        \item[Quadword] 64 bit / 8 Byte
+        \item[Double Quadword] 128 bit / 16 Byte
+    \end{description}
+
+    Kleinste Einheit eines Intel-Prozessors: 8 Bit (1 Byte) - Ein Register (64 Bit) braucht also immer 8 Adressen. Ein einzelnes Bit lässt sich nicht adressieren!
+
+    Byte Order:
+
+    \subsection{Assembler}
+    \begin{description}
+        \item[Assembler] "Zusammensetzer" Übersetzer in Maschinencode
+        \item[Assembly] die Sprache
+        \item[db] DataByte: Zahl in Output schreiben (z.B. db 48 / db 0x35 / db 'Hello')
+        \item[dw, dd, dq] Word, DWord, QWord
+        \item[nop] 90h
+    \end{description}
+
+    \subsection{Referenzen in Assembler}
+    Auf eine andere Stelle im Text verweisen.
+
+    \subsection{Ausgabedateien}
+    Flat-Form Binaries (plain, pure, raw), Wir brauchen aber Objekt-Dateien (Byte-Sequenz mit Zusatzinformationen, z.B. Symboltabelle/Labels)
+
+    \section{Variablen}
+    \subsection{Intel64 Register}
+    \begin{description}
+        \item[RAX] Accumulator, für einige Rechenoperationen das einzig mögliche Register
+        \item[RCX] Counter für Schleifen und Stringoperationen
+        \item[RDX] Pointer für I/O-Operationen
+        \item[RBX] Datenpointer
+        \item[RSI, RDI] Quell- (Source) und Zielindizes (Destination) für Stringoperationen
+        \item[RSP] Stackpointer, Adresse des allozierten Stacks
+        \item[RBP] Basepointer, Adresse innerhalb des Stacks, Basis des Rahmens der Funktion
+        \item[R8-R15] Zusätzliche Register
+    \end{description}
+
+    \begin{tabular}{llllll}
+      Nr. & 63..0 & 31..0 & 15..0 & 15..8 & 7..0\\
+      \hline
+      0 & RAX & EAX & AX & AH & AL\\
+      1 & RCX & ECX & CX & CH & CL\\
+      2 & RDX & EDX & DX & DH & DL\\
+      3 & RBX & EBX & BX & BH & BL\\
+      \hline
+      4 & RSP & ESP & BP & - & SPL\\
+      5 & RBP & EBP & BP & - & BPL\\
+      6 & RSI & ESI & SI & - & SIL\\
+      7 & RDI & EDI & DI & - & DIL\\
+      \hline
+      8 & R8 & R8D & R8W & - & R8L\\
+      .. & .. & .. & .. & - & ..\\
+      15 & R15 & R15D & R15W & - & R15L
+    \end{tabular}
+
+    Move-Operation (mov)
+    \begin{description}
+        \item[mov rax, rbx] Setze Inhalt von rax gleich rbx
+        \item[mov rax, 0x8000] Setze Inhalt von rax gleich 8000h
+        \item[mov rax, [0x8000]] Setze inhalt von rax gleich Inhalt von 8000h \dots 8007h
+    \end{description}
+
+    Assembler leitet den richtigen maschinencode aus der grösse des Registers ab.
+
+    \section{C Toolchain}
+    \begin{description}
+        \item[C Präprozessor] verarbeitet C-Quelle, z.B. \texttt{includes}. Durchlauf 1: Kommentare entfernen, multi-liner to oneline. Durchlauf 2: Tokenization (Bezeichner (beginnt mit Buchstaben oder \_, gefolgt von Zeugs), Prärozessor-Zahlen (beginnt mit einer Ziffer, gefolgt von Ziffern, Buchstaben, \_ oder Exponenten), String- und Character-Literale (Anführungs und Schullzeichen von Strings), Operatoren und Satzzeichen (Greedy), Sonstige), Whitespace trennt tokens. Durchlauf 3: Präprozessod-Direktiven (z.B. \texttt{includes}, prepend mit hashtag) ausführen, Makros durch Expansion ersetzen (Objektartige (ohne Parameter) und Funktionsartige Makros, textersetzung, welche auch witzige formen z.B. int x = XYZ annehmen kann, aber nicht Rekursiv)
+        \item[C Compiler] verarbeitet bereinigte C-Quelle (a.k.a \emph{Translation Unit}) (übersetzt \emph{eine} bereinige C-Datei in \emph{eine} Assembler-Datei, die bereinigte C-Datei enthält nur gültige C-Ausdrücke)
+        \item[C Translation Unit] Folge von Deklarationen und Definitionen
+        \item[Deklaration] Verknüpft einen Bezeichner Compiler-Intern mit einem Typen.
+        \item[Definition] Umfasst auch immer eine Deklaration, legt aber auch den entsprechenden Speicher an.
+        \item[Globale Variablen]
+        \item[static] "Antiglobal"
+        \item[Assembler] verarbeitet Assembler-Datei
+        \item[Linker] verarbeitet Objektdateien zu Executables (viele Fehler)
+    \end{description}
+
+    \subsection{Includes}
+    \texttt{<stdio.h>} sucht nur in den Systemverzeichnissen, \texttt{"stdio.h"} sucht erst im aktuellen Verzeichnis und dann in den anderen. Wenn vom Präprozessor gefunden, werden die drei Schritte des Präprozessors auch darauf ausgeführt (Farhad: Aufruf Rekursiv?)
+
+\end{multicols*}
+\end{document}
