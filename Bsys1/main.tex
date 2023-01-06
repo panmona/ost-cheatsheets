@@ -169,6 +169,18 @@ int *b = &a; // b pointer to a
 a = *b + 1; // a = dereference b and add 1
 \end{lstlisting}
 Incrementing a pointer will skip \textbf{sizeof(t)} Bytes!
+\begin{lstlisting}[language=c]
+int32_t x;
+int32_t *y = &x;
+y++; // y wird um 4 erhöht!
+\end{lstlisting}
+\vspace{2pt}
+Pointer Differenz \textbf{nur} bei gleichen Typen!
+\begin{lstlisting}[language=c]
+int32_t *y = 100;
+int32_t *x = 120;
+prtdiff_t z = x - y; // z == 5 (5 * 4 Byte)
+\end{lstlisting}
 
 \subsection{Numbers in C}
 \begin{itemize}
@@ -210,15 +222,62 @@ g(1, 2, 3); // Fehler -> parameter type is void
 
 \subsection{printf Identifiers}
 \begin{itemize}
-    \item \textcolor{teal}{sizeof(Integer) as signed decimal = \%d}
-    \item \textcolor{teal}{sizeof(Integer) as unsigned decimal = \%u}
-    \item \textcolor{teal}{sizeof(Integer) as hexadecimal = \%x or \%U}
-    \item \textcolor{teal}{sizeof(long) as signed decimal = \%li}
-    \item \textcolor{teal}{sizeof(long long) as signed decimal = \%lli}
-    \item \textcolor{teal}{sizeof(void *) as pointer = \%p}
-    \item \textcolor{teal}{sizeof(char *) as pointer (null terminated) = \%s}
-    \item \textcolor{teal}{sizeof(double) as floating point = \%f}
+    \item \textcolor{teal}{\textbf{sizeof(Integer)} as signed decimal = \%d oder \%i}
+    \item \textcolor{teal}{\textbf{sizeof(Integer)} as unsigned decimal = \%u}
+    \item \textcolor{teal}{\textbf{sizeof(Integer)} as hexadecimal = \%x or \%U}
+    \item \textcolor{teal}{\textbf{sizeof(long)} as signed decimal = \%li}
+    \item \textcolor{teal}{\textbf{sizeof(long long)} as signed decimal = \%lli}
+    \item \textcolor{teal}{\textbf{sizeof(void *)} as pointer = \%p (hexadecimal)}
+    \item \textcolor{teal}{\textbf{sizeof(char *)} as pointer (null terminated) = \%s}
+    \item \textcolor{teal}{\textbf{sizeof(double)} as floating point = \%f}
 \end{itemize}
+
+\subsection{Datentypen}
+Vordefinierte int Typen Aliase:
+
+\cinline{intpr\_t}: Signed Integer Typ in den Adresse passt
+
+\cinline{int8\_t}, \cinline{int16\_t}, \cinline{int32\_t}, \cinline{int64\_t}: Genaue Anzahl der Bits
+
+\cinline{size\_t}: unsigned int -> genug gross für Adressierung von allem Speicher. Sicherer Datentyp iterieren Array.
+
+\subsection{Arrays}
+Label of Array used like \textbf{constant} Pointer
+
+\cinline{int32_t a[10]} wird nicht initialisiert (ausser global)
+
+\cinline{int a[4] = { 0x10 }} wird initialisiert
+
+\cinline{a[0]=0x42} ist das gleiche wie \cinline{*a = 0x42}
+
+\subsubsection{Arrays als Parameter}
+\begin{itemize}
+    \item Werden als Addressen übergeben, auch wenn Parameter als Array Typ deklariert wird
+    \item Enthalten \textbf{keine} Information über ihre Grösse
+\end{itemize}
+
+\subsection{Strings}
+\cinline{char * s = "Hai";} -> \textbf{Literal}, an speziellem Ort gespeichert, durch Wert der Adresse ersetzt, Werte können nicht verändert werden, zusätzlicher Memory für Pointer benötigt
+
+\cinline{char c[] = \{'H', 'a', 'i', '\0'\};} -> Grösse kann hineinkompiliert werden bei sizeof (bei Funktionsaufruf geht dies verloren, da nur Pointer übergeben), Werte können verändert werden, 'c' ist einfach "Label" auf ersten Index
+
+Strings werden als char *s übergeben -> Null terminiert = wir wissen wo sie aufhören
+
+\subsubsection{String Funktionen}
+Länge von String: \cinline{strlen (char const *str)}, jedoch potenziell gefährlich wenn zB kein \textbackslash0 kommt
+
+Deshalb: \cinline{strnlen (char const *str, size_t max)}: Bricht nach max Zeichen ab
+
+
+\subsection{const}
+von compiler überprüft, Tricks jedoch möglich, ausser global (Segmentation Fault)\vspace{2pt}
+
+von rechts nach links lesen
+\cinline{char const * const * c} -> c is (non-const) pointer to const pointer to const char
+
+wenn 'const' ganz links: \cinline{const char} <=> \cinline{char const}
+
+
 
 \end{multicols*}
 \end{document}
