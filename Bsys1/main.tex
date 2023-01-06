@@ -7,10 +7,27 @@
 \begin{multicols*}{4}
 
 \section{Prozessor}
+P. kann nur über Speicherbus mit Umwelt interagieren!
 \textbf{schreiben}:
 \begin{enumerate}
-    \item Prozessor legt Adresse auf Adressbus \& Daten auf Datenbus
+    \item P. legt Adresse auf Adressbus \& Daten auf Datenbus
+    \item P. aktiviert Speicherbus zum Schreiben
 \end{enumerate}
+\textbf{lesen}:
+\begin{enumerate}
+    \item P. legt Adresse auf Adressbus
+    \item P. aktiviert Speicherbus zum Lesen
+    \item Speicher legt Daten auf Datenbus
+\end{enumerate}
+
+\section{Memory}
+
+\begin{lstlisting}[language={[x86masm]Assembler}]
+mov rax, [0x8000] ; ok move 8000h into rax
+mov [0x8000], rax ; ok move value at rax into 0x8000
+mov rax, rbx      ; ok move rbx into rax, no memory access!!
+mov [0x8000], [0x7000] ; error can't move memory to memory!!
+\end{lstlisting}
 
 \section{Einführung und Modulübersicht}
 Ein Computer besteht aus Prozessoren, Hauptspeicher und Ein- und Ausgabegeräten. Das Betriebssystem verwaltet diese Ressourcen.

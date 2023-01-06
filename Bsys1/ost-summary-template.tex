@@ -64,6 +64,34 @@
 % Code
 \usepackage{listings}
 
+
+\definecolor{lightgray}{rgb}{0.95, 0.95, 0.95}
+\definecolor{darkgray}{rgb}{0.4, 0.4, 0.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+\definecolor{ocherCode}{rgb}{1, 0.5, 0} % #FF7F00 -> rgb(239, 169, 0)
+\definecolor{blueCode}{rgb}{0, 0, 0.93} % #0000EE -> rgb(0, 0, 238)
+\definecolor{greenCode}{rgb}{0, 0.6, 0} % #009900 -> rgb(0, 153, 0)
+\definecolor{teal}{rgb}{0.0, 0.5, 0.5}
+
+\lstdefinestyle{code}{
+    identifierstyle=\color{black},
+    keywordstyle=\color{blue}\bfseries\small,
+    ndkeywordstyle=\color{greenCode}\bfseries\small,
+    stringstyle=\color{ocherCode}\ttfamily\small,
+    commentstyle=\color{teal}\ttfamily\textit\small,
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    belowskip=0pt,
+    aboveskip=0pt
+}
+
 \lstset{
    extendedchars=true,
    basicstyle=\footnotesize\ttfamily,
@@ -72,6 +100,7 @@
    showspaces=false,
    showtabs=false
    showstringspaces=false,
+   style=code
 }
 
 %% https://tex.stackexchange.com/a/536018
@@ -83,27 +112,6 @@
     {ü}{{\"u}}1
     {ä}{{\"a}}1
     {ö}{{\"o}}1
-}
-
-%% Java Language definition
-\lstdefinelanguage{java}{
-  keywords=[1]{abstract, assert, boolean, byte, char, class, default, double,
-  enum, extends, final, float, implements, import, instanceof, int, interface,
-  long, native, null, package, private, protected, public, short, static,
-  strictfp, super, synchronized, this, throw, throws, transient, void,
-  volatile},
-  keywordstyle=[1]\color{DarkBlue}\bfseries,
-  keywords=[2]{if, else, while, do, try, case, catch, finally, new, break,
-  continue, return, switch},
-  keywordstyle=[2]\color{DarkRed}\bfseries,
-  identifierstyle=\ttfamily,
-  sensitive=false,
-  comment=[l]{//},
-  morecomment=[s]{/*}{*/},
-  commentstyle=\color{DarkGray},
-  stringstyle=\color{DarkGreen},
-  morestring=[b]',
-  morestring=[b]"
 }
 
 % Images
