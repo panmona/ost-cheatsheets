@@ -53,7 +53,10 @@ after_my_text:
 
 \textbf{Weitere:} RCX, RDX, RBX, RSI, RDI, RSP, RBP, R8-R15
 
+% TODO add syscall somewhere?
+
 \section{Memory}
+% TODO do I have enough space to add Displacement Adressierung, Scaled-Index-Adressierung & Base Adressierung?
 \begin{lstlisting}[language={[x86masm]Assembler}]
 mov rax, [0x8000] ; move 8000h into rax
 mov rbx, [rax] ; address is in the register rax
@@ -69,7 +72,7 @@ Operanden müssen gleich gross sein.
 % (e.g. arithmetic operations)
 % see saved pages
 
-% TODO take a look later if that is still correct
+% TODO take a look later if "subsection" is correct
 \subsection{Flags}
 CF \& OF werden immer beide von CPU bestimmt.
 
@@ -86,6 +89,23 @@ Zero Flag (ZF) == set when result is 0
 Sign Flag == is the highest bit of the result
 
 Parity Flag (PF) == set if lowest byte has even number of bits
+
+\section{Stack (\& Framepointer)}
+"Oberstes" Element an kleinster Adresse
+
+-> wächst nach unten
+
+Prozessor überprüft \textbf{keine} obere/untere Grenze!
+
+\includegraphics[width=0.25\textwidth]{rbp_rsp_base_sit.jpg}
+\includegraphics[width=0.24\textwidth]{rbp_rsp_preamble_epilogue.jpg}
+
+Argumente sind vor der Rücksprungadresse auf Stack gelandet. Access via: [rbp + 0x10]
+
+\section{Calling Conventions}
+Welche Register / Stack für Argumente.
+
+Von Betriebssystem / Compiler bestimmt => unterschiedlich
 
 \section{C}
 \subsection{C-Toolchain}
@@ -104,11 +124,11 @@ Parity Flag (PF) == set if lowest byte has even number of bits
     \item Präprozessor Direktiven ausführen (include, if, ...)
 
     \& Makros expandieren
-    \begin{lstlisting}[language=c]
+\end{enumerate}
+\begin{lstlisting}[language=c]
 #define XYZ 123
 // XYZ wird im Folgenden mit 123 ersetzt
-    \end{lstlisting}
-\end{enumerate}
+\end{lstlisting}
 
 \subsubsection{Compiler}
 Eine C-Datei -> Eine Assemblerdatei
@@ -172,7 +192,33 @@ not: !q | and: q \&\& p | or: q || p
 \subsection{Arithmetische Operationen}
 z = x + y -> falls Überlauf: verpufft (kein Carry)
 
+\subsection{Funktionen}
+Parameter werden immer kopiert. (call by value)\vspace{2pt}
 
+Bei Pointer als Parameter: Pointer wird kopiert, nicht der Wert dahinter -> Simulation von call by reference.\vspace{2pt}
+
+Rückgabewert kann jeder Typ ausser Array Typen sein. Rückgabewert wird immer kopiert.
+
+\begin{lstlisting}[language=c]
+void f ();
+void g (void);
+f(); // OK
+g(); // OK
+f(1, 2, 3); // OK. LOL.
+g(1, 2, 3); // Fehler -> parameter type is void
+\end{lstlisting}
+
+\subsection{printf Identifiers}
+\begin{itemize}
+    \item \textcolor{teal}{sizeof(Integer) as signed decimal = \%d}
+    \item \textcolor{teal}{sizeof(Integer) as unsigned decimal = \%u}
+    \item \textcolor{teal}{sizeof(Integer) as hexadecimal = \%x or \%U}
+    \item \textcolor{teal}{sizeof(long) as signed decimal = \%li}
+    \item \textcolor{teal}{sizeof(long long) as signed decimal = \%lli}
+    \item \textcolor{teal}{sizeof(void *) as pointer = \%p}
+    \item \textcolor{teal}{sizeof(char *) as pointer (null terminated) = \%s}
+    \item \textcolor{teal}{sizeof(double) as floating point = \%f}
+\end{itemize}
 
 \end{multicols*}
 \end{document}
