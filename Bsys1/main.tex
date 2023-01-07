@@ -348,7 +348,7 @@ easy variant for knowing how much memory to free:
 
 \subsection{Buddy System}
 
-% TODO here I want to insert screenshot, but onedrive is not working grrrrr.
+\includegraphics[width=0.12\textwidth]{buddies_1.jpg}
 
 Wird Bereich freigegeben: Überprürfen ob Buddy in \(2^k\)-Liste mit Freielementen
 
@@ -374,6 +374,9 @@ Buddies wenn: gleiche Grösse, Startadresse darf sich nur im Bit k unterscheiden
 \subsection{in Linux}
 Buddy-System für grosse Blöcke. Kleinste Blockgrösse = 4KB. malloc für Benutzer Applikationen
 
+\subsection{Objekt Pools}
+Speicherbereich fester Grösse, wird in kleine Bereiche mit gleicher Grösse unterteilt.
+
 \section{Memory Management Unit (MMU)}
 Prozess erhält virtuelle und nicht reale Adresse von OS. MMU macht Übersetzung.
 
@@ -385,25 +388,66 @@ Fehlendes Mapping => MMU wirft Fault Interrupt => CPU ruft OS-Interrupt Handler 
 Wenn RAM ausgelagert, Interrupt wird getriggered. OS lädt RAM nach, passt Mapping Table an, setzt Prozess fort.
 
 \begin{description}
-    \item[Page] typischerweise 4KB => 12 Bit Offset. Repräsentiert Daten. Kein Speicher, braucht Page Frame. OS platziert Pages.
+    \item[Page] typischerweise 4KB. Repräsentiert Daten. Kein Speicher, braucht Page Frame. OS platziert Pages.
     \item[Page Frame] Gleich gross wie Page (4KB)
     \item[Page Table] Virtuelle Adresse wird via Page-Table in reale Adresse übersetzt
 \end{description}
+
+\includegraphics[width=0.15\textwidth]{virtual_address_to_index.jpg}
 
 \subsection{Single-Level Page Table}
 Grösse hängt von Grösse des virtuellen Adressraums ab.
 
 Für jeden Prozess braucht es \underline{volle} Page Table. Auch wenn nur wenig Speicher benötigt.
 
+Index = Page Number
+
 \subsection{Multi-Level Page Tables}
-\includegraphics[scale=0.27]{multi_level_page_table.png}
+Bei einer Table/Directory wird immer Speicher für ganze Liste gebraucht.
 
-Page-Tables always allocate the entire list! Page Directories only allocate the entries when they exist!
+Tables die nicht gebraucht werden, werden nicht angelegt.
 
-Status Bit "used"
+Status Bit "Used" in Table \& Directory gibt an ob genutzt. Wenn in Table alles auf 0: löschen.
 
 \section{Virtueller Speicher (Software)}
+\begin{description}
+    \item[P-Bit] =1: Page ist im Speicher, =0: Page ist nicht im Speicher
+    \item[A-Bit] =Accessed. Page wurde \underline{kürzlich} im Prozess verwendet. MMU setzt bei jedem Lesezugriff auf 1. OS soll es in Zeitintervallen löschen.
+    \item[D-Bit] =Dirty. Page in RAM anders als in sekundären Speicher. OS soll erst löschen, wenn Page tatsächlich zurückgeschrieben wurde.
+\end{description}
+\vspace{2pt}
+Wenn nicht im Hauptspeicher:
+\begin{enumerate}
+    \item MMU wirft Fault Interrupt
+    \item OS schaut "Page Location Information" an. gültig -> lade page. ungültig -> segmentation fault
+\end{enumerate}
 
+Problem: Häufiges Paging (Threshing). Verminderung durch Paging-Strategien / mehr Ram / max. Anzahl Prozesse
+
+\subsection{Ladestrategien}
+\begin{description}
+    \item[Demand Paging] Pages nur dann geladen, wenn benötigt. Braucht immer Interrupt
+    \item[Prepaging] Seiten werden vor Verwendung geladen. (in Reinform muss Zukunft bekannt sein)
+    \item[Demand Paging mit Prepaging] Wie Demand Paging. Benachbarte Pages werden in Clustern mitgeladen (zB 4 oder 8)
+    -> weniger Page Faults, Blocktransfer, vlt nicht benötigte Pages geladen
+\end{description}
+
+\subsection{Entladestrategien (wann zurück in Swap?)}
+\begin{description}
+    \item[Demand Cleaning] Page wird zurückgeschrieben, wenn Frame ersetzt werden soll
+    \item[Precleaning] Modifizierte Pages werden frühzeitig in sekundären Speicher geschrieben.
+    Bei Page Wechsel muss alte Page nicht mehr geschrieben werden. Wenn Page nochmals verändert: Schreiben vergebens.
+\end{description}
+
+\subsection{Verdrängungsstrategien}
+Wenn Speicher knapp: welche Page aus Hauptspeicher entfernt?
+
+Saubere Pages bevorzugt ersetzen (D=0)
+
+\begin{description}
+    \item[FIFO]
+    \item[Second Chance] Älteste nicht verwendete Page wird entfernt. Wenn alle Pages verwendet=FIFO. Neue Page hat A=1. Implementation mit in Kreis verhängter LinkedList.
+\end{description}
 
 \end{multicols*}
 \end{document}
