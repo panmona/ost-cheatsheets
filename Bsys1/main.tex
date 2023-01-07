@@ -30,7 +30,6 @@ Stellen innerhalb Bytes werden nicht vertauscht!
 \end{description}
 
 \section{Assembly}
-\subsection{Numbers in Assembly}
 \begin{description}
     \item[db] Byte, 8 Bit
     \item[dw] Word, 2 Byte, 16 Bit
@@ -76,10 +75,10 @@ after_my_text:
     \item and rax, rbx\textcolor{teal}{// AND}
     \item not rax     \textcolor{teal}{// NOT}
     \item test rax, rax \textcolor{teal}{// set ZF = 1 if rax == 0}
-    \item jmp S       \textcolor{teal}{// Jump to S > GOTO}
-    \item cmp rax, 3 \textcolor{teal}{// compare rax and 3, set ZF = 1 if not}
-    \item cmov rax, 5 \textcolor{teal}{// move 5 into rax if condition met}
-    \item je 230 \textcolor{teal}{// move 230 down if condition met}
+    \item cmp rax, 3 \textcolor{teal}{// compare rax and 3, set ZF = 1 if equal}
+    \item cmove rax, 5 \textcolor{teal}{// move 5 into rax if equal}
+    \item je 230 \textcolor{teal}{// move 230 down if condition met, RIP + 230, gemessen von Ende momentaner Instruktion}
+    \item jmp S       \textcolor{teal}{// Jump to label S > GOTO}
     \item call S \textcolor{teal}{// push rax and jmp S > function call}
     \item ret    \textcolor{teal}{// pop rax and jmp rax > return}
 \end{description}
@@ -97,16 +96,16 @@ CF \& OF werden immer beide von CPU bestimmt.
 \end{description}
 
 \subsection{Usage of compare with Condition Codes}
-\textcolor{teal}{A : Above } \textcolor{teal}{ -> CF = 0 AND ZF = 0}\newline
-\textcolor{teal}{AE: Above or Equal } \textcolor{teal}{ -> CF = 0}\newline
-\textcolor{teal}{B : Below } \textcolor{teal}{ -> CF = 1}\newline
-\textcolor{teal}{BE: Below or Equal } \textcolor{teal}{ -> CF = 1 AND ZF = 1}\newline
+\textcolor{teal}{A : Above } \textcolor{teal}{ -> CF = 0 AND ZF = 0 \textbf{(unsigned)}}\newline
+\textcolor{teal}{AE: Above or Equal } \textcolor{teal}{ -> CF = 0 \textbf{(unsigned)}}\newline
+\textcolor{teal}{B : Below } \textcolor{teal}{ -> CF = 1 \textbf{(unsigned)}}\newline
+\textcolor{teal}{BE: Below or Equal } \textcolor{teal}{ -> CF = 1 AND ZF = 1 \textbf{(unsigned)}}\newline
 \textcolor{teal}{E : Equal } \textcolor{teal}{ -> ZF = 1}\newline
-\textcolor{teal}{G : Greater } \textcolor{teal}{ -> SF = OF = 0 AND ZF = 0}\newline
-\textcolor{teal}{GE: Greater or Equal } \textcolor{teal}{ -> SF = OF}\newline
-\textcolor{teal}{L : Less } \textcolor{teal}{ -> SF != OF}\newline
-\textcolor{teal}{LE: Less or Equal } \textcolor{teal}{ -> SF != OF AND ZF = 1}\newline
-\textcolor{teal}{PE: Parity Even}  \textcolor{teal}{ -> PF =1}\newline
+\textcolor{teal}{G : Greater } \textcolor{teal}{ -> SF = OF = 0 AND ZF = 0 \textbf{(signed)}}\newline
+\textcolor{teal}{GE: Greater or Equal } \textcolor{teal}{ -> SF = OF \textbf{(signed)}}\newline
+\textcolor{teal}{L : Less } \textcolor{teal}{ -> SF != OF \textbf{(signed)}}\newline
+\textcolor{teal}{LE: Less or Equal } \textcolor{teal}{ -> SF != OF AND ZF = 1 \textbf{(signed)}}\newline
+\textcolor{teal}{PE: Parity Even}  \textcolor{teal}{ -> PF = 1}\newline
 \textcolor{teal}{PO: Parity Old } \textcolor{teal}{ -> PF = 0}\newline
 \textcolor{teal}{Z:  Zero} \textcolor{teal}{ -> ZF = 1}
 
@@ -129,14 +128,12 @@ mov [0x8000], [0x7000] ; err. can't move memory to memory
 Operanden müssen gleich gross sein.
 
 \section{Stack (\& Framepointer)}
-"Oberstes" Element an kleinster Adresse
-
--> wächst nach unten
+Top Element at smallest address -> top to bottom
 
 Prozessor überprüft \textbf{keine} obere/untere Grenze!
 
 \includegraphics[width=0.25\textwidth]{rbp_rsp_base_sit.jpg}
-\includegraphics[width=0.24\textwidth]{rbp_rsp_preamble_epilogue.jpg}
+\includegraphics[width=0.25\textwidth]{rbp_rsp_preamble_epilogue.jpg}
 
 Argumente sind vor der Rücksprungadresse auf Stack gelandet. Access via: [rbp + 0x10]
 
@@ -160,7 +157,6 @@ Welche Register / Stack für Argumente. Von Betriebssystem \& Compiler bestimmt 
     \item Präprozessor Direktiven ausführen (include, if, ...)
     \& Makros expandieren
 
-    % TODO get onto 2 pages. TODO look at jne etc. again
     \cinline{#define XYZ 123 // XYZ wird im Folgenden mit 123 ersetzt}
 \end{enumerate}
 
@@ -221,6 +217,7 @@ Werden Bit per Bit angewendet:
 not: \~{}q | and: q \& p | or: q | p
 
 left shift: q << p (\(* 2^m\)) | right shift: q >> p ("\(/ 2^m\)")
+
 \subsection{Logische Operatoren}
 not: !q | and: q \&\& p | or: q || p
 
@@ -418,11 +415,9 @@ Wenn RAM ausgelagert, Interrupt wird getriggered. OS lädt RAM nach, passt Mappi
 \includegraphics[width=0.15\textwidth]{virtual_address_to_index.jpg}
 
 \subsection{Single-Level Page Table}
-Grösse hängt von Grösse des virtuellen Adressraums ab.
+Index = Page Number. Grösse hängt von Grösse des virtuellen Adressraums ab.
 
 Für jeden Prozess braucht es \underline{volle} Page Table. Auch wenn nur wenig Speicher benötigt.
-
-Index = Page Number
 
 \subsection{Multi-Level Page Tables}
 Bei einer Table/Directory wird immer Speicher für ganze Liste gebraucht.
@@ -463,19 +458,17 @@ Problem: Häufiges Paging (Threshing). Verminderung durch Paging-Strategien / me
 \end{description}
 
 \subsection{Verdrängungsstrategien}
-Wenn Speicher knapp: welche Page aus Hauptspeicher entfernt?
-
-Saubere Pages bevorzugt ersetzen (D=0)
+Wenn Speicher knapp: welche Page aus Hauptspeicher entfernt? Sauber/D=0 Pages bevorzugt ersetzen
 
 \begin{description}
     \item[Optimal] Page die am spätesten wieder benötigt wird
     \item[FIFO] First in First Out
     \item[Second Chance] Älteste nicht verwendete Page wird entfernt. Wenn alle Pages verwendet=FIFO. Neue Page hat A=1. In Kreis verhängte LinkedList.
-    \item[Least Recently Used] am längsten unbenutzte Page. MMU muss Zeitpunkt in Page-Table notieren. Page mit kleinstem T wird ersetzt. Hoher HW Aufwand für Messung.
-    \item[Not Frequently Used] OS misst A-Bits in regelmässigem Abstand. Counter Table. In Timer-Interrupt wird Counter erhöht, falls Zugriff passiert. Problem: Alte Pages können lange drin bleiben.  \includegraphics[width=0.2\textwidth]{nfu.png}
+    \item[Least Recently Used] am längsten unbenutzte Page. MMU muss Zeitpunkt in Page-Table notieren. Page mit kleinstem T wird ersetzt. Hoher HW Aufwand.
+    \item[Not Frequently Used] OS misst A-Bits in regelmässigem Abstand. Counter Table. In Timer-Interrupt wird Counter erhöht, falls Zugriff passiert. Problem: Alte Pages können lange drin bleiben.  \includegraphics[width=0.21\textwidth]{nfu.png}
     \item[NFU mit Aging] Counter wird mit Bit Shifting gealtert \includegraphics[width=0.2\textwidth]{nfu_aging.png}
     \item[Working Set] Scanne \underline{alle} Pages in Fault Interrupt. Behalte Pages von aktuellem Working Set, Limit für Alter ist Intervall T, Zeitstempel in Page Table eingetragen. Wenn keine Page gefunden: älteste Page (D=0 bevorzugt)
-    \includegraphics[width=0.2\textwidth]{working_set.png}
+    \includegraphics[width=0.21\textwidth]{working_set.png}
     \item[WSClock] Wie Working Set \underline{ABER} in Kreis verhängte LinkedList: In Kreis herumgehen, nächste Page zum Entfernen suchen.
 \end{description}
 
