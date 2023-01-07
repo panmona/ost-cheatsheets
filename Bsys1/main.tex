@@ -312,11 +312,53 @@ e.g.: \((84480801_h / 2^4) / 2^2 = 8448080_h / 2^2 = 2112020_h\)
 
 \textbf{One} lookup hardware part \textbf{per entry}! Parts compare at same time if match exists. High costs, really fast.
 
-
-
-
 \subsection{Direct Mapped Cache (DMC)}
 
+Adresse hat fixen Platz in Liste: untere p Bits identifizieren Zeile/Index.
+
+Nur reduzierter Tag wird gespeichert (Tag ohne untere p Bits). Braucht nur einen Baustein für Vergleich.
+
+einfach zu implementieren, schneller Lookup, viele Kollisionen (\(1234_h\), \(AB34_h\), p=8 -> beide in Eintrag \(34_h\))
+
+
+\subsection{k-Way Set-Associative Cache}
+Mehrere (k) Direct Mapped Caches -> weniger Kollisionen als DMC, weniger komplex als FAC
+
+Grösse von Way = Total / Anzahl Ways
+
+\section{Dynamischer Speicher}
+Heap: Speicherbereich für vollständig dynamischen Speicher. Reservierter Speicher \textbf{muss} freigegeben werden (explizit/implizit).
+
+\begin{lstlisting}[language=c]
+void * malloc (size_t s)
+void free (void * p)
+\end{lstlisting}
+
+easy variant for knowing how much memory to free:
+\includegraphics[width=0.24\textwidth]{implementation_memory.png}
+
+\subsection{Fragmentierung}
+\textbf{Interne Fragmentierung}: Heap reserviert mehr Speicher als angeforder (zB immer Vielfache von 8)
+
+\textbf{Externe Fragmentierung}: immer wieder Speicher reserviert, unregelmässig freigeben
+
+-> nur noch kleine Löcher
+
+\includegraphics[width=0.24\textwidth]{external_fragmentation.png}
+
+\subsection{Buddy System}
+
+\subsection{Suchalgorithmen für freie Bereiche}
+\begin{description}
+    \item[First Fit] Erste passende Lücke am Anfang
+    \item[Next Fit] Erste passende Lücke \underline{nach} zuletzt reserviertem Bereich
+    \item[Best Fit] Durchsucht \underline{alle} Lücken, wählt kleinste aus
+    \item[Worst Fit] Durchsucht \underline{alle} Lücken, wählt grösste aus
+    \item[Quick Fit] Erstes, kleinstes Element aus Liste
+\end{description}
+
+\subsection{in Linux}
+Buddy-System für grosse Blöcke. Kleinste Blockgrösse = 4KB. malloc für Benutzer Applikationen
 
 \end{multicols*}
 \end{document}
