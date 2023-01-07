@@ -348,6 +348,19 @@ easy variant for knowing how much memory to free:
 
 \subsection{Buddy System}
 
+% TODO here I want to insert screenshot, but onedrive is not working grrrrr.
+
+Wird Bereich freigegeben: Überprürfen ob Buddy in \(2^k\)-Liste mit Freielementen
+
+\textbf{Nein}: Bereich hinzufügen zu Freielementen
+
+\textbf{Ja}: Buddy aus Freiliste entfernen, Bereich mergen, mit Freigabe (rekursiv) fortfahren
+
+Buddies wenn: gleiche Grösse, Startadresse darf sich nur im Bit k unterscheiden!
+
+% Idea is to add some small notes with pencil on the left
+\hfill\includegraphics[width=0.12\textwidth]{buddies_2.png}
+
 \subsection{Suchalgorithmen für freie Bereiche}
 \begin{description}
     \item[First Fit] Erste passende Lücke am Anfang
@@ -355,10 +368,42 @@ easy variant for knowing how much memory to free:
     \item[Best Fit] Durchsucht \underline{alle} Lücken, wählt kleinste aus
     \item[Worst Fit] Durchsucht \underline{alle} Lücken, wählt grösste aus
     \item[Quick Fit] Erstes, kleinstes Element aus Liste
+    (Rekombination ist schwierig)
 \end{description}
 
 \subsection{in Linux}
 Buddy-System für grosse Blöcke. Kleinste Blockgrösse = 4KB. malloc für Benutzer Applikationen
+
+\section{Memory Management Unit (MMU)}
+Prozess erhält virtuelle und nicht reale Adresse von OS. MMU macht Übersetzung.
+
+=> mehr Speicher von Prozess verwendbar als RAM vorhanden, keine Rücksicht auf andere Prozesse
+
+\subsection{Fault Interrupt}
+Fehlendes Mapping => MMU wirft Fault Interrupt => CPU ruft OS-Interrupt Handler auf \& OS übernimmt.\vspace{2pt}
+
+Wenn RAM ausgelagert, Interrupt wird getriggered. OS lädt RAM nach, passt Mapping Table an, setzt Prozess fort.
+
+\begin{description}
+    \item[Page] typischerweise 4KB => 12 Bit Offset. Repräsentiert Daten. Kein Speicher, braucht Page Frame. OS platziert Pages.
+    \item[Page Frame] Gleich gross wie Page (4KB)
+    \item[Page Table] Virtuelle Adresse wird via Page-Table in reale Adresse übersetzt
+\end{description}
+
+\subsection{Single-Level Page Table}
+Grösse hängt von Grösse des virtuellen Adressraums ab.
+
+Für jeden Prozess braucht es \underline{volle} Page Table. Auch wenn nur wenig Speicher benötigt.
+
+\subsection{Multi-Level Page Tables}
+\includegraphics[scale=0.27]{multi_level_page_table.png}
+
+Page-Tables always allocate the entire list! Page Directories only allocate the entries when they exist!
+
+Status Bit "used"
+
+\section{Virtueller Speicher (Software)}
+
 
 \end{multicols*}
 \end{document}
