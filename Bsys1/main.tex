@@ -8,6 +8,7 @@
 
 \section{Prozessor}
 P. kann nur über Speicherbus mit Umwelt interagieren!
+
 \textbf{schreiben}:
 \begin{enumerate}
     \item P. legt Adresse auf Adressbus \& Daten auf Datenbus
@@ -21,7 +22,15 @@ P. kann nur über Speicherbus mit Umwelt interagieren!
 \end{enumerate}
 OpCode: \includegraphics[width=0.1\textwidth]{opcode.png}
 
-\section{Numbers in Assembly}
+\section{Byte Order}
+Stellen innerhalb Bytes werden nicht vertauscht!
+\begin{description}
+    \item[Big-Endian] CA | FE -> MSB ist erstes Bit
+    \item[Little-Endian] FE | CA -> LSB ist erstes Bit
+\end{description}
+
+\section{Assembly}
+\subsection{Numbers in Assembly}
 \begin{description}
     \item[db] Byte, 8 Bit
     \item[dw] Word, 2 Byte, 16 Bit
@@ -30,21 +39,14 @@ OpCode: \includegraphics[width=0.1\textwidth]{opcode.png}
     \item [Double Quadword] 16 Byte, 128 Bit
 \end{description}
 
-\section{Byte Order}
-Stellen innerhalb Bytes werden nicht vertauscht!
-\begin{description}
-    \item[Big-Endian] CA | FE -> MSB ist erstes Bit
-    \item[Little-Endian] FE | CA -> LSB ist erstes Bit
-\end{description}
-
-\section{Labels}
+\subsection{Labels}
 \begin{lstlisting}[language={[x86masm]Assembler}]
 text_length: dq after_my_text - my_text
 my_text: db 'BSys 1'
 after_my_text:
 \end{lstlisting}
 
-\section{Register}
+\subsection{Register}
 \begin{tabular}{llllll}
     63..0 & 31..0 & 15..0 & 15..8 & 7..0\\
     \hline
@@ -53,7 +55,42 @@ after_my_text:
 
 \textbf{Weitere:} RCX, RDX, RBX, RSI, RDI, RSP, RBP, R8-R15
 
-% TODO add syscall somewhere?
+
+
+\subsection{Assembly Instructions}
+\begin{itemize}
+    \item mov rax, 1 \textcolor{teal}{//move the value 1 into rax}
+    \item add z,   q  \textcolor{teal}{// z + q}
+    \item sub z,   q  \textcolor{teal}{// z - q}
+    \item adc z,   q  \textcolor{teal}{// z + q + c (carry -> previous calculation)}
+    \item sbb z,   q  \textcolor{teal}{// z - q - c (carry -> previous calculation)}
+    \item neg z       \textcolor{teal}{// 0 - z ("zweierkomplement")}
+    % TODO what?
+    \item inc z       \textcolor{teal}{// z++ }
+    \item dec z       \textcolor{teal}{// z-- }
+    \item mul z       \textcolor{teal}{// multiply with implicit 2nd operand }\newline
+    mul rbx -> RDX:RAX <-- RAX * RBX
+    \item imul z,   i  \textcolor{teal}{// signed equivalent for mul, z * i }
+    \item div z,      \textcolor{teal}{// divide with implicit 2.operand}\newline
+    div rbx  \newline
+    d = RDX:RAX\newline
+    RAX <-- RDX:RAX / RBX\newline
+    RDX <-- RDX:RAX mod RBX
+    \item shl z,   i  \textcolor{teal}{// z * \(2^i\)               --> shift}
+    \item shr z,   i  \textcolor{teal}{// z * \(2^{-i}\) z signed   --> shift}
+    \item sar z,   i  \textcolor{teal}{// z * \(2^{-i}\) z unsigned --> shift}
+    \item and rax, rbx\textcolor{teal}{// AND}
+    \item not rax     \textcolor{teal}{// NOT}
+    \item test rax, rax \textcolor{teal}{// set ZF = 1 if rax == 0}
+    \item jmp S       \textcolor{teal}{// Jump to S > GOTO}
+    \item cmp rax, 3 \textcolor{teal}{// compare rax and 3, set ZF = 1 if not}
+    \item cmov rax, 5 \textcolor{teal}{// move 5 into rax if condition met}
+    \item je 230 \textcolor{teal}{// move 230 down if condition met}
+    \item call S \textcolor{teal}{// push rax and jmp S > function call}
+    \item ret    \textcolor{teal}{// pop rax and jmp rax > return}
+
+    % TODO add syscall !
+\end{itemize}
 
 \section{Memory}
 % TODO do I have enough space to add Displacement Adressierung, Scaled-Index-Adressierung & Base Adressierung?
@@ -226,7 +263,6 @@ g(1, 2, 3); // Fehler -> parameter type is void
     \item \textcolor{teal}{\textbf{sizeof(Integer)} as unsigned decimal = \%u}
     \item \textcolor{teal}{\textbf{sizeof(Integer)} as hexadecimal = \%x or \%U}
     \item \textcolor{teal}{\textbf{sizeof(long)} as signed decimal = \%li}
-    \item \textcolor{teal}{\textbf{sizeof(long long)} as signed decimal = \%lli}
     \item \textcolor{teal}{\textbf{sizeof(void *)} as pointer = \%p (hexadecimal)}
     \item \textcolor{teal}{\textbf{sizeof(char *)} as pointer (null terminated) = \%s}
     \item \textcolor{teal}{\textbf{sizeof(double)} as floating point = \%f}
@@ -415,6 +451,7 @@ Status Bit "Used" in Table \& Directory gibt an ob genutzt. Wenn in Table alles 
     \item[A-Bit] =Accessed. Page wurde \underline{kürzlich} im Prozess verwendet. MMU setzt bei jedem Lesezugriff auf 1. OS soll es in Zeitintervallen löschen.
     \item[D-Bit] =Dirty. Page in RAM anders als in sekundären Speicher. OS soll erst löschen, wenn Page tatsächlich zurückgeschrieben wurde.
 \end{description}
+% TODO maybe add combinations? dependent on space.
 \vspace{2pt}
 Wenn nicht im Hauptspeicher:
 \begin{enumerate}
@@ -445,9 +482,20 @@ Wenn Speicher knapp: welche Page aus Hauptspeicher entfernt?
 Saubere Pages bevorzugt ersetzen (D=0)
 
 \begin{description}
-    \item[FIFO]
-    \item[Second Chance] Älteste nicht verwendete Page wird entfernt. Wenn alle Pages verwendet=FIFO. Neue Page hat A=1. Implementation mit in Kreis verhängter LinkedList.
+    \item[Optimal] Page die am spätesten wieder benötigt wird
+    \item[FIFO] First in First Out
+    \item[Second Chance] Älteste nicht verwendete Page wird entfernt. Wenn alle Pages verwendet=FIFO. Neue Page hat A=1. In Kreis verhängte LinkedList.
+    \item[Least Recently Used] am längsten unbenutzte Page. MMU muss Zeitpunkt in Page-Table notieren. Page mit kleinstem T wird ersetzt. Hoher HW Aufwand für Messung.
+    \item[Not Frequently Used] OS misst A-Bits in regelmässigem Abstand. Counter Table. In Timer-Interrupt wird Counter erhöht, falls Zugriff passiert. Problem: Alte Pages können lange drin bleiben.  \includegraphics[width=0.2\textwidth]{nfu.png}
+    \item[NFU mit Aging] Counter wird mit Bit Shifting gealtert \includegraphics[width=0.2\textwidth]{nfu_aging.png}
+    \item[Working Set] Scanne \underline{alle} Pages in Fault Interrupt. Behalte Pages von aktuellem Working Set, Limit für Alter ist Intervall T, Zeitstempel in Page Table eingetragen. Wenn keine Page gefunden: älteste Page (D=0 bevorzugt)
+    \includegraphics[width=0.2\textwidth]{working_set.png}
+    % TODO maybe remove following pic if not enough available space.
+    \includegraphics[width=0.2\textwidth]{working_set2.png}
+
+    \item[WSClock] Wie Working Set \underline{ABER} in Kreis verhängte LinkedList: In Kreis herumgehen, nächste Page zum Entfernen suchen.
 \end{description}
+
 
 \end{multicols*}
 \end{document}
