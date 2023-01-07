@@ -55,30 +55,24 @@ after_my_text:
 
 \textbf{Weitere:} RCX, RDX, RBX, RSI, RDI, RSP, RBP, R8-R15
 
-
-
 \subsection{Assembly Instructions}
-\begin{itemize}
+\begin{description}
     \item mov rax, 1 \textcolor{teal}{//move the value 1 into rax}
     \item add z,   q  \textcolor{teal}{// z + q}
     \item sub z,   q  \textcolor{teal}{// z - q}
     \item adc z,   q  \textcolor{teal}{// z + q + c (carry -> previous calculation)}
     \item sbb z,   q  \textcolor{teal}{// z - q - c (carry -> previous calculation)}
     \item neg z       \textcolor{teal}{// 0 - z ("zweierkomplement")}
-    % TODO what?
     \item inc z       \textcolor{teal}{// z++ }
     \item dec z       \textcolor{teal}{// z-- }
-    \item mul z       \textcolor{teal}{// multiply with implicit 2nd operand }\newline
-    mul rbx -> RDX:RAX <-- RAX * RBX
-    \item imul z,   i  \textcolor{teal}{// signed equivalent for mul, z * i }
-    \item div z,      \textcolor{teal}{// divide with implicit 2.operand}\newline
-    div rbx  \newline
-    d = RDX:RAX\newline
-    RAX <-- RDX:RAX / RBX\newline
-    RDX <-- RDX:RAX mod RBX
-    \item shl z,   i  \textcolor{teal}{// z * \(2^i\)               --> shift}
-    \item shr z,   i  \textcolor{teal}{// z * \(2^{-i}\) z signed   --> shift}
-    \item sar z,   i  \textcolor{teal}{// z * \(2^{-i}\) z unsigned --> shift}
+    \item mul rbx     \textcolor{teal}{// RBX * RAX. Ergebnis in RDX \& RAX }
+    \item imul z      \textcolor{teal}{// signed equivalent for mul, z * RAX }
+    \item div rbx      \textcolor{teal}{// RAX / RBX. Ergebnis: RAX. Rest: RDX. \underline{Slow}.}
+    \item shl z,   i  \textcolor{teal}{// \(z * 2^i\) shift: <<}
+    \item shr z,   i  \textcolor{teal}{// \(z * 2^{-i}\) z signed, shift: >>}
+    \item sar z,   i  \textcolor{teal}{// \(z * 2^{-i}\) z unsigned, shift: >>, sign extension}
+    \item rol z,   i  \textcolor{teal}{// Left-Rotate i Bits }
+    \item ror z,   i  \textcolor{teal}{// Right-Rotate i Bits }
     \item and rax, rbx\textcolor{teal}{// AND}
     \item not rax     \textcolor{teal}{// NOT}
     \item test rax, rax \textcolor{teal}{// set ZF = 1 if rax == 0}
@@ -88,9 +82,40 @@ after_my_text:
     \item je 230 \textcolor{teal}{// move 230 down if condition met}
     \item call S \textcolor{teal}{// push rax and jmp S > function call}
     \item ret    \textcolor{teal}{// pop rax and jmp rax > return}
+\end{description}
 
-    % TODO add syscall !
-\end{itemize}
+\section{Flags}
+CF \& OF werden immer beide von CPU bestimmt.
+
+\begin{description}
+    \item[Carry Flag (CF)] Überlauf bei \textbf{unsigned} Arithmetik
+    0001 + 1111 = 0000, CF = 1 --> 1 + 15 = 0, CF = 1
+    \item[Overflow Flag (OF)] Überlauf bei \textbf{signed} Arithmetik
+    0111 + 0001 = 1000 -> 7 + 1 = -8 (negative prefix)
+    \item[Zero Flag (ZF)] set when result is 0
+    \item[Sign Flag] is the highest bit of the result (what is sign)
+\end{description}
+
+\subsection{Usage of compare with Condition Codes}
+\textcolor{teal}{A : Above } \textcolor{teal}{ -> CF = 0 AND ZF = 0}\newline
+\textcolor{teal}{AE: Above or Equal } \textcolor{teal}{ -> CF = 0}\newline
+\textcolor{teal}{B : Below } \textcolor{teal}{ -> CF = 1}\newline
+\textcolor{teal}{BE: Below or Equal } \textcolor{teal}{ -> CF = 1 AND ZF = 1}\newline
+\textcolor{teal}{E : Equal } \textcolor{teal}{ -> ZF = 1}\newline
+\textcolor{teal}{G : Greater } \textcolor{teal}{ -> SF = OF = 0 AND ZF = 0}\newline
+\textcolor{teal}{GE: Greater or Equal } \textcolor{teal}{ -> SF = OF}\newline
+\textcolor{teal}{L : Less } \textcolor{teal}{ -> SF != OF}\newline
+\textcolor{teal}{LE: Less or Equal } \textcolor{teal}{ -> SF != OF AND ZF = 1}\newline
+\textcolor{teal}{PE: Parity Even}  \textcolor{teal}{ -> PF =1}\newline
+\textcolor{teal}{PO: Parity Old } \textcolor{teal}{ -> PF = 0}\newline
+\textcolor{teal}{Z:  Zero} \textcolor{teal}{ -> ZF = 1}
+
+\section{Syscall}
+\begin{lstlisting}[language={[x86masm]Assembler}]
+mov rax, 60 ; 60 == exit instruction
+mov rdi, 0 ; exit code -> 0 means ok
+syscall ; OS executes instruction from rax
+\end{lstlisting}
 
 \section{Memory}
 % TODO do I have enough space to add Displacement Adressierung, Scaled-Index-Adressierung & Base Adressierung?
@@ -98,34 +123,10 @@ after_my_text:
 mov rax, [0x8000] ; move 8000h into rax
 mov rbx, [rax] ; address is in the register rax
 mov [0x8000], rax ; move val at rax into 0x8000
-; move rbx into rax, no memory access:
-mov rax, rbx
-; error can't move memory to memory:
-mov [0x8000], [0x7000]
+mov rax, rbx ; rbx into rax, no memory access
+mov [0x8000], [0x7000] ; err. can't move memory to memory
 \end{lstlisting}
 Operanden müssen gleich gross sein.
-
-% TODO: More Assembly constructs
-% (e.g. arithmetic operations)
-% see saved pages
-
-% TODO take a look later if "subsection" is correct
-\subsection{Flags}
-CF \& OF werden immer beide von CPU bestimmt.
-
-Carry Flag (CF) == Überlauf bei \textbf{unsigned} Arithmetik
-
-0001 + 1111 = 0000, CF = 1 --> 1 + 15 = 0, CF = 1
-
-Overflow Flag (OF) == Überlauf bei \textbf{signed} Arithmetik
-
-0111 + 0001 = 1000 -> 7 + 1 = -8 (negative prefix)
-
-Zero Flag (ZF) == set when result is 0
-
-Sign Flag == is the highest bit of the result
-
-Parity Flag (PF) == set if lowest byte has even number of bits
 
 \section{Stack (\& Framepointer)}
 "Oberstes" Element an kleinster Adresse
@@ -140,9 +141,7 @@ Prozessor überprüft \textbf{keine} obere/untere Grenze!
 Argumente sind vor der Rücksprungadresse auf Stack gelandet. Access via: [rbp + 0x10]
 
 \section{Calling Conventions}
-Welche Register / Stack für Argumente.
-
-Von Betriebssystem / Compiler bestimmt => unterschiedlich
+Welche Register / Stack für Argumente. Von Betriebssystem \& Compiler bestimmt => unterschiedlich
 
 \section{C}
 \subsection{C-Toolchain}
@@ -159,13 +158,12 @@ Von Betriebssystem / Compiler bestimmt => unterschiedlich
 
     Bildet grösstmögliches Token
     \item Präprozessor Direktiven ausführen (include, if, ...)
-
     \& Makros expandieren
+
+    % TODO get onto 2 pages. TODO look at jne etc. again
+    \cinline{#define XYZ 123 // XYZ wird im Folgenden mit 123 ersetzt}
 \end{enumerate}
-\begin{lstlisting}[language=c]
-#define XYZ 123
-// XYZ wird im Folgenden mit 123 ersetzt
-\end{lstlisting}
+
 
 \subsubsection{Compiler}
 Eine C-Datei -> Eine Assemblerdatei
@@ -194,9 +192,7 @@ Bei signed MSB: 0=positiv, 1=negativ
 
 Umwandlung von negativer Binärzahl:
 
-Zweierkomplement bilden -> flip + 1
-
--> 1010 -> 0101 -> 0110
+Zweierkomplement: flip + 1 (e.g. 1010 -> 0101 -> 0110)
 
 \subsection{Pointers}
 
@@ -218,16 +214,6 @@ int32_t *y = 100;
 int32_t *x = 120;
 prtdiff_t z = x - y; // z == 5 (5 * 4 Byte)
 \end{lstlisting}
-
-\subsection{Numbers in C}
-\begin{itemize}
-    \item Decimal: 0..9 with \textbf{NO 0 at the start}
-    \item Octal: 0..7 with a \textbf{leading 0}
-    \item Hex: 0..F with \textbf{leading 0x}
-    \item Suffix: the suffic specifies a type:
-
-    l: long, ll: long long, u: unsigned, ul: unsigned long
-\end{itemize}
 
 \subsection{Bitwise Operators}
 Werden Bit per Bit angewendet:
@@ -293,9 +279,9 @@ Label of Array used like \textbf{constant} Pointer
 \end{itemize}
 
 \subsection{Strings}
-\cinline{char * s = "Hai";} -> \textbf{Literal}, an speziellem Ort gespeichert, durch Wert der Adresse ersetzt, Werte können nicht verändert werden, zusätzlicher Memory für Pointer benötigt
+\cinline{char * s = "Hai";} -> \textbf{Literal}, stored at special place, replaced with value of address, can't be changed, additional memory needed for pointer
 
-\cinline{char c[] = \{'H', 'a', 'i', '\0'\};} -> Grösse kann hineinkompiliert werden bei sizeof (bei Funktionsaufruf geht dies verloren, da nur Pointer übergeben), Werte können verändert werden, 'c' ist einfach "Label" auf ersten Index
+\cinline{char c[] = \{'H', 'a', 'i', '\0'\};} -> size is compiled into program with sizeof (with function call, info is lost, as only pointer is given), values can be changed, 'c' is just a label that points to first index
 
 Strings werden als char *s übergeben -> Null terminiert = wir wissen wo sie aufhören
 
@@ -380,7 +366,7 @@ easy variant for knowing how much memory to free:
 
 -> nur noch kleine Löcher
 
-\includegraphics[width=0.24\textwidth]{external_fragmentation.png}
+\includegraphics[width=0.2\textwidth]{external_fragmentation.png}
 
 \subsection{Buddy System}
 
@@ -465,7 +451,7 @@ Problem: Häufiges Paging (Threshing). Verminderung durch Paging-Strategien / me
 \begin{description}
     \item[Demand Paging] Pages nur dann geladen, wenn benötigt. Braucht immer Interrupt
     \item[Prepaging] Seiten werden vor Verwendung geladen. (in Reinform muss Zukunft bekannt sein)
-    \item[Demand Paging mit Prepaging] Wie Demand Paging. Benachbarte Pages werden in Clustern mitgeladen (zB 4 oder 8)
+    \item[Demand Paging mit Prepaging] Benachbarte Pages in Clustern mitgeladen (zB 4 oder 8)
     -> weniger Page Faults, Blocktransfer, vlt nicht benötigte Pages geladen
 \end{description}
 
@@ -490,9 +476,6 @@ Saubere Pages bevorzugt ersetzen (D=0)
     \item[NFU mit Aging] Counter wird mit Bit Shifting gealtert \includegraphics[width=0.2\textwidth]{nfu_aging.png}
     \item[Working Set] Scanne \underline{alle} Pages in Fault Interrupt. Behalte Pages von aktuellem Working Set, Limit für Alter ist Intervall T, Zeitstempel in Page Table eingetragen. Wenn keine Page gefunden: älteste Page (D=0 bevorzugt)
     \includegraphics[width=0.2\textwidth]{working_set.png}
-    % TODO maybe remove following pic if not enough available space.
-    \includegraphics[width=0.2\textwidth]{working_set2.png}
-
     \item[WSClock] Wie Working Set \underline{ABER} in Kreis verhängte LinkedList: In Kreis herumgehen, nächste Page zum Entfernen suchen.
 \end{description}
 
