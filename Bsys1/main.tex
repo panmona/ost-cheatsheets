@@ -197,7 +197,7 @@ Werden Bit per Bit angewendet:
 
 not: \~{}q | and: q \& p | or: q | p
 
-left shift: q << p ($* 2^m$) | right shift: q >> p ("$/ 2^m$")
+left shift: q << p (\(* 2^m\)) | right shift: q >> p ("\(/ 2^m\)")
 \subsection{Logische Operatoren}
 not: !q | and: q \&\& p | or: q || p
 
@@ -277,6 +277,45 @@ von rechts nach links lesen
 
 wenn 'const' ganz links: \cinline{const char} <=> \cinline{char const}
 
+\subsection{structs}
+\begin{lstlisting}[language=c]
+struct T // <- T ist der Tag.
+{
+    int x; // <- same address as struct
+    int a[2]; // compiler can add padding
+    char * name;
+};
+// If not enough members: Initialized with 0:
+struct T t1 = { 2, {4, 5}, "Frida"};
+struct T t2 = { .x = 2, .a[0] = 4, .a[1] = 5,
+    .name = "Frida" }; // Explicit init
+t1.x = 3;
+struct T *t3 = &t2;
+t3->x = 5; // only for pointers
+\end{lstlisting}
+
+\section{Cache}
+\includegraphics[width=0.24\textwidth]{locality.jpg}
+
+\(E(T) = P_C * T_C + (1 - P_C )* T_M\)
+
+\(T_C\): Access time on Cache |
+\(T_M\): Access time on Memory |
+\(P_C\): Probability of Cache-Hit
+
+\subsection{Fully Associative Cache (FAC)}
+Every Cache Row mapped to 1 address on cache.
+
+e.g. for 64 Byte: n-6 upper Bits for identifying cache line. \& lower 6 bits for offset in a cache line
+
+e.g.: \((84480801_h / 2^4) / 2^2 = 8448080_h / 2^2 = 2112020_h\)
+
+\textbf{One} lookup hardware part \textbf{per entry}! Parts compare at same time if match exists. High costs, really fast.
+
+
+
+
+\subsection{Direct Mapped Cache (DMC)}
 
 
 \end{multicols*}
