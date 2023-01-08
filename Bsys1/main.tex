@@ -7,8 +7,6 @@
 \begin{multicols*}{4}
 
 \section{Prozessor}
-P. kann nur über Speicherbus mit Umwelt interagieren!
-
 \textbf{schreiben}:
 \begin{enumerate}
     \item P. legt Adresse auf Adressbus \& Daten auf Datenbus
@@ -204,7 +202,7 @@ int32_t *y = &x;
 y++; // y wird um 4 erhöht!
 \end{lstlisting}
 \vspace{2pt}
-Pointer Differenz \textbf{nur} bei gleichen Typen!
+Pointer Differenz/Addition \textbf{nur} bei gleichen Typen!
 \begin{lstlisting}[language=c]
 int32_t *y = 100;
 int32_t *x = 120;
@@ -325,7 +323,7 @@ t3->x = 5; // only for pointers
 \subsection{Fully Associative Cache (FAC)}
 Every Cache Row mapped to 1 address on cache.
 
-e.g. for 64 Byte: n-6 upper Bits for identifying cache line. \& lower 6 bits for offset in a cache line
+e.g. for 64 Byte: n-6 upper Bits for identifying cache line. \& lower 6 bits for \textbf{offset} in a cache line
 
 e.g.: \((84480801_h / 2^4) / 2^2 = 8448080_h / 2^2 = 2112020_h\)
 
@@ -333,12 +331,17 @@ e.g.: \((84480801_h / 2^4) / 2^2 = 8448080_h / 2^2 = 2112020_h\)
 
 \subsection{Direct Mapped Cache (DMC)}
 
-Adresse hat fixen Platz in Liste: untere p Bits identifizieren Zeile/Index.
+Adresse hat fixen Platz in Liste: untere p Bits identifizieren Zeile/Index. Unterste für \textbf{Offset} in Cache Line
 
 Nur reduzierter Tag wird gespeichert (Tag ohne untere p Bits). Braucht nur einen Baustein für Vergleich.
 
 einfach zu implementieren, schneller Lookup, viele Kollisionen (\(1234_h\), \(AB34_h\), p=8 -> beide in Eintrag \(34_h\))
 
+\begin{description}
+    \item[Offset Bits] = Zeilengrösse (16 B -> \(2^4\) -> 4 Bit)
+    \item[Bits für Zeilen] = Total Daten / Cachezeilenlänge
+    \item[Tag Bits] = Adressbits - Bits für Zeilen - Offset Bits
+\end{description}
 
 \subsection{k-Way Set-Associative Cache}
 Mehrere (k) Direct Mapped Caches -> weniger Kollisionen als DMC, weniger komplex als FAC
@@ -411,8 +414,7 @@ Wenn RAM ausgelagert, Interrupt wird getriggered. OS lädt RAM nach, passt Mappi
     \item[Page Frame] Gleich gross wie Page (4KB)
     \item[Page Table] Virtuelle Adresse wird via Page-Table in reale Adresse übersetzt
 \end{description}
-
-\includegraphics[width=0.15\textwidth]{virtual_address_to_index.jpg}
+\includegraphics[width=0.21\textwidth]{virtual_address_to_index.jpg}
 
 \subsection{Single-Level Page Table}
 Index = Page Number. Grösse hängt von Grösse des virtuellen Adressraums ab.
