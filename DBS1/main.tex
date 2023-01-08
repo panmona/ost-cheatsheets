@@ -11,12 +11,11 @@
 \usepackage{amssymb}
 \usepackage{stmaryrd}
 
-
 \geometry{top=1cm,left=1.5cm,right=1cm,bottom=1cm}
 
 % Turn off header and footer
 \pagestyle{empty}
- 
+
 % Redefine section commands to use less space
 \makeatletter
 \renewcommand{\section}{\@startsection{section}{1}{0mm}%
@@ -81,7 +80,7 @@
 
 \section{Relationales Modell}
 
-\texttt{Game (\underline{Id} INT PK, Name TEXT UNIQUE, Foo INT REFERENCES TblB)}
+\texttt{Game (\underline{Id} INT PK, Name TEXT UNIQUE, Foo1 INT NOT NULL REFERENCES TblB, Foo0 INT REFERENCES TblC)}
 
 \section{Abbildung}
 \subsection{1:n/n:n Beziehungen}
@@ -97,7 +96,7 @@ Zwischentabelle.
 \section{SQL DDL (Data Definition Language)}
 
 \begin{minted}{sql}
-CREATE DTABASE foo WITH OWNER = 'bar';
+CREATE DATABASE foo WITH OWNER = 'bar';
 CREATE TABLE Game (
   ArticleID INTEGER PRIMARY KEY,
   Name VARCHAR(300) NOT NULL,
@@ -145,7 +144,6 @@ UPDATE Ang set salaer = 30000 WHERE persnr = 1100;
 DELETE FROM Mitarbeiter WHERE Abteilung_ID = 1;
 \end{minted}
 
-\columnbreak
 \section{SQL DQL (Query)}
 
 \subsection{Select}
@@ -184,7 +182,8 @@ SELECT * from Products p WHERE Quantity <
 
 \subsubsection{Left Join}
 \sqljoin{\fillA}{1 & \texttt{NULL} \\ 2 & 2}{SELECT * FROM a LEFT JOIN b ON a.x = b.x;}
-right: dito. Mit \sql{WHERE b.x IS NOT NULL}: ohne $A \cap B$
+right: dito.
+Mit \sql{WHERE b.x IS NOT NULL}: ohne $A \cap B$
 
 \subsubsection{Outer join}
 \sqljoin{\fillA \fillB}{1 & \texttt{NULL} \\ 2 & 2 \\ \texttt{NULL} & 3}{SELECT * FROM a FULL OUTER JOIN b ON a.x = b.x;}
@@ -286,57 +285,6 @@ COMMIT TRANSACTION;
 \end{minted}
 
 
-\vfill
-\pagebreak
-
-\section{JDBC}
-\begin{minted}{java}
-try (Connection conn = DriverManager.getConnection(...) {
-  try (Statement stmt = conn.createStatement()) {
-    ResultSet rs = stmt.executeQuery("select * from ang");
-    while (rs.next()) {
-      int val = rs.getInt("tel");
-      if (rs.wasNull()) continue;
-      System.out.printf("foo: %d\n", val); }}}
-\end{minted}
-
-\begin{minted}{java}
-try (Statement stmt = ...) {
-  conn.setAutoCommit(false);
-  conn.setTransactionIsolation(
-    Connection.TRANSACTION_SERIALIZABLE);
-  stmt.addBatch("UPDATE ...");
-  int[] rowCount = stmt.executeBatch()
-  conn.commit();
-} catch (SQLException ex) {
-  conn.rollback();
-  // ...
-}
-\end{minted}
-
-\begin{minted}{java}
-PreparedSt. stmt = conn.prepareSt.("INSERT ... (?)");
-stmt.setString(1, "Kelly");
-stmt.addBatch();
-stmt.executeBatch()
-\end{minted}
-
-\begin{minted}{java}
-St. s = c.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                          ResultSet.CONCUR_UPDATABLE);
-rs.first(); rs.updateInt("Age", 100); rs.updateRow();
-rs.moveToInsertRow(); rs.updateInt("B", 20); rs.insertRow();
-rs.absolute(1); rs.deleteRow();
-\end{minted}
-
-\subsection{Treibertypen}
-\begin{enumerate}
-  \item JDBC-ODBC-Brücke
-  \item Native plattformeigene JDBC-Treiber
-  \item Universeller JDBC-Treiber (Java)
-  \item Direkte Netzwerktreiber (Java)
-\end{enumerate}
-
 \subsection{Serialisierbarkeit}
 $r_{1}(x)$: T1 liest x / $w_{1}(x)$: T1 schreibt x / $c_{1}$: T1 commit
 
@@ -373,18 +321,6 @@ $\tb{r}{(x)}\ta{r}{(x)}\ta{w}{(x)}\tc{r}{(x)}\tc{w}{(x)}\tc{c}{}\tb{w}{(y)}\ta{w
 \item[Pessimistisches Locking] Prognose: Viel writes. slock und xlock.
 \end{description}
 
-\begin{tabular}{lllllll}
-  serializable & & \cancel{dead} & \cancel{casc. rb} & \cancel{confl. rb.} & $\parallel$ & real. \\
-  \hline
-  2PL & \checked & - & - & \checked & - & - \\
-  Strict 2PL & \checked & - & \checked & \checked & - & \checked \\
-  Preclaiming $\sim$ & \checked & \checked & \checked & \checked & - & -\\
-  Validation & \checked & \checked & - & - & \checked & \checked \\
-  Timestamp & \checked & \checked & - & - & \checked & \checked \\
-  Snapshot & - & \checked PG & \checked & - & \checked & \checked \\
-  SSI & \checked & \checked PG & \checked & - & \checked & \checked
-\end{tabular}
-
 \subsection{Isolation levels}
 
 \checked: möglich; (-): unmöglich mit cursor stability
@@ -409,6 +345,7 @@ Undo (SQL), PrevLSN]
 
 \section{Btree}
 
+% TODO improve this info
 \includegraphics[width=\columnwidth]{bbaum.png}
 
 $k = 2 \Rightarrow k..2k$ keys (ausser root), max. 2k+1 Unterknoten.
@@ -424,7 +361,7 @@ $k = 2 \Rightarrow k..2k$ keys (ausser root), max. 2k+1 Unterknoten.
 
 \section{UML}
 
-\includegraphics[height=\columnwidth-2em,angle=90]{uml.png}
+\includegraphics[height=\columnwidth-2em,angle=90]{uml2.png}
 
 Typen! Notizen mit Eselsohr-Rechteck und gestricheltem Pfeil.
 
@@ -436,7 +373,6 @@ Vererbung mit subclass {\huge$\rightarrowtriangle$} superclass.
 \section{Begriffe}
 
 \begin{description}
-\item[DBS]{DBMS + $n \cdot \mathrm{DB}$}
 \item[Vorteile]{Skalierbar, Permissions, Integrität, Live-Abfragen, Kapslung}
 \item[Funktionen]{Transaktionen, Mehrbenutzer, Backups, $\ldots$}
 \item[3-Ebenen]{\emph{externe Ebene} (Anwendungen-Sicht), \emph{logische (konzeptionale) Ebene}
