@@ -1,74 +1,11 @@
-\documentclass[10pt,landscape,a4paper]{article}
-\usepackage{multicol}
-\usepackage[landscape]{geometry}
-\usepackage{hyperref}
-\usepackage[utf8]{inputenc}
-\usepackage{minted}
-\usepackage{venndiagram}
-\usepackage{graphicx}
-\usepackage{cancel}
-\usepackage{wasysym}
-\usepackage{amssymb}
-\usepackage{stmaryrd}
-
-\geometry{top=1cm,left=1.5cm,right=1cm,bottom=1cm}
-
-% Turn off header and footer
-\pagestyle{empty}
-
-% Redefine section commands to use less space
-\makeatletter
-\renewcommand{\section}{\@startsection{section}{1}{0mm}%
-                                {-1ex plus -.5ex minus -.2ex}%
-                                {0.5ex plus .2ex}%x
-                                {\normalfont\large\bfseries}}
-\renewcommand{\subsection}{\@startsection{subsection}{2}{0mm}%
-                                {-1explus -.5ex minus -.2ex}%
-                                {0.5ex plus .2ex}%
-                                {\normalfont\small\bfseries}}
-\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{0mm}%
-                                {-1ex plus -.5ex minus -.2ex}%
-                                {1ex plus .2ex}%
-                                {\normalfont\footnotesize\bfseries}}
-\renewcommand{\@venn@radius}{4mm}
-\renewcommand{\@venn@overlap}{2mm}
-\renewcommand{\@venn@vgap}{1mm}
-\renewcommand{\@venn@hgap}{1mm}
-\makeatother
-
-% Don't print section numbers
-\setcounter{secnumdepth}{0}
-
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0pt plus 0.5ex}
-
-\newcommand{\sqljoin}[3]{
-\begin{multicols*}{2}
-  \begin{venndiagram2sets}
-    #1
-  \end{venndiagram2sets}
-  \vfill\columnbreak
-  \hspace{-8em}
-  \begin{tabular}{ll}
-    x & y \\
-    \hline
-    #2
-  \end{tabular}
-\end{multicols*}
-\mint{sql}{#3}
-}
-
-\newcommand{\sql}[1]{\mintinline{sql}{#1}}
-
-
-
-% -----------------------------------------------------------------------
-
+\input{./template.tex}
+\newcommand{\TITLE}{Datenbanksysteme 1}
+\newcommand{\AUTHOR}{Florian Bruhin, Mona Panchaud}
+\newcommand{\INSTITUTE}{Ostschweizer Fachhochschule}
 \begin{document}
 
 \footnotesize
 \begin{multicols*}{3}
-
 
 % multicol parameters
 % These lengths are set only within the two main columns
@@ -78,15 +15,23 @@
 \setlength{\multicolsep}{1pt}
 \setlength{\columnsep}{2pt}
 
+\section{Normalformen}
+\begin{description}
+    \item[1.NF] Wertebereiche der Tabelle sind atomar: strukturierte Werte (Mengen, Wiederholungsgruppen etc.) sind nicht zugelassen (z.B. nicht Vor-/Nachname in 1 Attribut), hat PK
+    \item[2.NF] Every non-key attribute \textbf{must} depend on entire primary key
+    \item[3.NF] Every non-key attribute should depend on key, the whole key, and nothing but the key. (keine transitiven Abhängigkeiten)
+\end{description}
+
 \section{Relationales Modell}
 
-\texttt{Game (\underline{Id} INT PK, Name TEXT UNIQUE, Foo1 INT NOT NULL REFERENCES TblB, Foo0 INT REFERENCES TblC)}
+\texttt{Game (\underline{Id} INT PK, Name TEXT UNIQUE, Zu1Beziehung INT NOT NULL REFERENCES TblB, Zu0Beziehung INT REFERENCES TblC)}
 
 \section{Abbildung}
 \subsection{1:n/n:n Beziehungen}
 1:n via Fremdschlüssel (oder Zwischentabelle mit Attributen), n:n via
 Zwischentabelle.
 \subsection{Vererbung}
+% TODO maybe improve?
 \begin{itemize}
 \item{Eine Tabelle für Sub-/Superklasse, mit enum: \\ \sql{CREATE TYPE angtyp AS ENUM ('Chefin', 'Sysadmin')}}
 \item{Je eine Tabelle pro Subklasse}
@@ -101,8 +46,9 @@ CREATE TABLE Game (
   ArticleID INTEGER PRIMARY KEY,
   Name VARCHAR(300) NOT NULL,
   Date DATE DEFAULT CURRENT_DATE,
+  FK_FOO INTEGER NOT NULL REFERENCES FooTable (id)
   ...  -- ggf. constraints, ohne "ADD CONSTRAINT"
-)
+);
 \end{minted}
 
 \begin{minted}{sql}
@@ -113,17 +59,15 @@ ALTER TABLE Game
 
 \begin{minted}{sql}
 ALTER TABLE AbtLeitung
-ADD CONSTRAINT fk_AbtLAbt
-  FOREIGN KEY (AbtNr) REFERENCES Abteilung (AbtNr)
-  -- AbtLeitung wird gelöscht wenn Abteilung gelöscht wird
-  ON DELETE CASCADE;
+  ADD CONSTRAINT fk_AbtLAbt
+    FOREIGN KEY (AbtNr) REFERENCES Abteilung (AbtNr)
+    -- AbtLeitung wird gelöscht wenn Abteilung gelöscht wird
+    ON DELETE CASCADE;
 
 ... CHECK (Salaer BETWEEN 1000 and 20000);
 
 CREATE INDEX name ON tbl (col);
   WHERE state = 'N'; -- partiell
-
-PRIMARY KEY, INDEX, UNIQUE
 
 DROP CONSTRAINT fk_AbtLAbt;
 \end{minted}
@@ -149,7 +93,7 @@ DELETE FROM Mitarbeiter WHERE Abteilung_ID = 1;
 \subsection{Select}
 \begin{minted}{sql}
  SELECT DISTINCT Wohnort, Name FROM angestellter
- WHERE AbtNr=3 AND Name LIKE '_lorian B%'
+ WHERE AbtNr=3 AND Name LIKE 'Mo%'
  ORDER BY Wohnort ASC, Name DESC;
 \end{minted}
 
@@ -296,19 +240,13 @@ Konfliktpotential: 2 Transaktionen, write involviert, dasselbe Obj
 
 \subsubsection{Schedule}
 $\tb{r}{(x)}\ta{r}{(x)}\ta{w}{(x)}\tc{r}{(x)}\tc{w}{(x)}\tc{c}{}\tb{w}{(y)}\ta{w}{(y)}\ta{c}{}\tb{c}{}$ \\
+% TODO better image
 \includegraphics[width=20em]{serial.png}
 
-\subsection{Concurrency-Probleme}
-\begin{description}
-\item[Lost Update]{$\ta{r}{(x)} \tb{w}{(x)} \ta{w}{(x)}$ (z.B. += 5)}
-\item[Dirty Read]{$\ta{w}{(x)} \tb{r}{(x)} \ta{\mathrm{rollback}}{(x)}$}
-\item[Non-Repeatable read]{$\ta{r}{(x_{1})} \tb{w}{(x)} \ta{r}{(x_{2})} \rightarrow x_1 \neq x_2$}
-\item[Phantom Reads]{$\ta{\mathrm{sel}}{(x_{1})} \tb{\mathrm{ins}}{(y)} \ta{\mathrm{sel}}{(x_{2})} \rightarrow x_1 \neq x_2$}
-\item[Read skew]{$\ta{r}{(x)}\tb{w}{(x)}\tb{w}{(y)}\ta{r}{(y)} \rightarrow $ \cancel{constraint}}
-\item[Write skew]{$\ta{r}{(x)}\tb{r}{(x)}\ta{r}{(y)}\tb{r}{(y)\tb{w}{(x)\ta{w}{(y)}}} \rightarrow $ \cancel{constraint}}
-\end{description}
+
 
 \subsection{Concurrency Control}
+% TODO better desc
 \begin{description}
 \item[2PL]{Growing/Shrinking Phase: Zuerst alle locks, dann alle unlocks. Strict: Unlocks ganz am Ende.}
 \item[Opfersuche]{Zyklus unterbrechen $\rightarrow$ (ggf. cascading) rollback}
@@ -322,7 +260,7 @@ $\tb{r}{(x)}\ta{r}{(x)}\ta{w}{(x)}\tc{r}{(x)}\tc{w}{(x)}\tc{c}{}\tb{w}{(y)}\ta{w
 \end{description}
 
 \subsection{Isolation levels}
-
+% TODO add additional info on what this actually means.
 \checked: möglich; (-): unmöglich mit cursor stability
 
 \begin{tabular}{lllll}
@@ -363,10 +301,7 @@ $k = 2 \Rightarrow k..2k$ keys (ausser root), max. 2k+1 Unterknoten.
 
 \includegraphics[height=\columnwidth-2em,angle=90]{uml2.png}
 
-Typen! Notizen mit Eselsohr-Rechteck und gestricheltem Pfeil.
-
-Diamant oben \textbf{falsch}! Abteilung $\blacklozenge -$ AbtLeitung heisst
-``Abt has-a AbtLeitung'' und entspricht \sql{ON DELETE CASCADE} auf Rückseite.
+Aggregation: $\lozenge$ Komposition: $\blacklozenge $
 
 Vererbung mit subclass {\huge$\rightarrowtriangle$} superclass.
 
@@ -379,17 +314,9 @@ Vererbung mit subclass {\huge$\rightarrowtriangle$} superclass.
     (DB/konzeptionelles Schema, letzteres ist Modell der Realität), \emph{interne
     Ebene}. Durch Trennung: Datenunabhängigkeit}
 \item[Datenbasis]{Daten auf HDD - Anwendungsdaten und Data Dictionary (Metadaten)}
-\item[Modelle]{Hierarchisch, Netzwerk, Relationen, Postrelational (Methoden,
-    nicht mehr 1NF), Objektrelational, OO (Objekte in DB)}
-\item[Tier]{\emph{1-Tier}: DBMS im selben Prozess wie Client (MS Access), \emph{2-Tier}:
-    gleiche Maschine}
 \item[Entitätstyp]{Klasse}
 \item[Schlüsselkandidaten]{Minimale Attributskombinationen, die eine Entität
     gerade noch eindeutig identifizieren}
-\item[1.NF]{Wertebereiche der Tabelle sind atomar (z.B. nicht Vor-/Nachname in 1 Attribut)}
-\item[2.NF]{Tabelle mit mehreren Primärschlüsselattributen: Nichtschlüsselattr. sind
-    von jedem Schlüsselattr. abhängig}
-\item[3.NF]{2.NF mit Transitivität ($A \leftarrow C$ wenn $A \leftarrow B \leftarrow C$)}
 \item[ACID]{Atomicity, Consistency, Isolation, Durability}
 \item[Indexe]{ISAM (Aufsteigend via Indexspalte, überlaufseiten möglich), Hash, BRIN, GiST, GIN, Btree, Bitmap. Kann funktional/zusammengesetzt/partiell/clustered sein.}
 \item[Mutationsanomalien]{Bei Redundanz. INSERT-, UPDATE-, DELETE-Anomalie}
