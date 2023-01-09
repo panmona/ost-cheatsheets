@@ -220,11 +220,12 @@ REVOKE UPDATE ON "Ang" FROM 'angguest';
 
 \section{Transactions}
 \begin{minted}[escapeinside=||]{sql}
-BEGIN TRANSACTION |\colorbox{gray}{ISOLATION LEVEL SERIALIZABLE}|;
-INSERT INTO Ang (...) VALUES (...);
-SAVEPOINT ang_ok;
-UPDATE Ang SET ...;
-ROLLBACK TO SAVEPOINT ang_ok;
+BEGIN TRANSACTION;
+    SET TRANSACTION |\colorbox{gray}{ISOLATION LEVEL SERIALIZABLE}|;
+    INSERT INTO Ang (...) VALUES (...);
+    SAVEPOINT ang_ok;
+    UPDATE Ang SET ...;
+    ROLLBACK TO SAVEPOINT ang_ok;
 COMMIT TRANSACTION;
 \end{minted}
 
@@ -239,19 +240,15 @@ Konfliktpotential: 2 Transaktionen, write involviert, dasselbe Obj
 \newcommand{\tc}[2]{{\color{green}#1_{3}#2}}
 
 \subsubsection{Schedule}
-$\tb{r}{(x)}\ta{r}{(x)}\ta{w}{(x)}\tc{r}{(x)}\tc{w}{(x)}\tc{c}{}\tb{w}{(y)}\ta{w}{(y)}\ta{c}{}\tb{c}{}$ \\
-% TODO better image
 \includegraphics[width=20em]{serial.png}
 
-
-
 \subsection{Concurrency Control}
-% TODO better desc
+
 \begin{description}
-\item[2PL]{Growing/Shrinking Phase: Zuerst alle locks, dann alle unlocks. Strict: Unlocks ganz am Ende.}
+\item[2-Phase-Locking]{Growing/Shrinking Phase: Vor Zugriff muss Objekt in Transaktion gesperrt werden. Sobald ein Lock freigegeben, dürfen keine weiteren mehr bezogen werden. Strict 2PL: Unlocks werden ganz am Ende von Transaktion freigegeben.}
 \item[Opfersuche]{Zyklus unterbrechen $\rightarrow$ (ggf. cascading) rollback}
-\item[Timestamps/MVCC]{Timestamps $t_x$ und $t_T$. Schreiben: \\ $t_x = t_T$.
-    Lesen: $t_x \leq t_T$. Non-blocking reads!}
+\item[Snapshot Isolation] von ganzer Tabelle wird 'Schattenkopie' angelegt
+\item[MVCC]{Nur von bearbeiteter Zeile wird 'Schattenkopie' angelegt}
 \item[Validation]{Snapshot, Commit, falls snapshot dirty: rollback}
 \item[Deadlock-Voraussetzungen] mutex, geschachtelte locks, zyklisches Warten, locks ohne timeout
 \item[Locks] \emph{slock} nur lesend (shared mit reader) \emph{xlock} exklusiv
@@ -260,16 +257,22 @@ $\tb{r}{(x)}\ta{r}{(x)}\ta{w}{(x)}\tc{r}{(x)}\tc{w}{(x)}\tc{c}{}\tb{w}{(y)}\ta{w
 \end{description}
 
 \subsection{Isolation levels}
-% TODO add additional info on what this actually means.
-\checked: möglich; (-): unmöglich mit cursor stability
 
-\begin{tabular}{lllll}
-  Isolation & Dirty & Lost upd. & Nonrep. & Phantom \\
+\begin{description}
+    \item[Dirty Read] Daten von nicht commiteter Transaktion werden gelesen. Andere Transaktion macht zB Rollback, es werden falsche Berechnungen gemacht.
+    \item[Fuzzy Read (Non-Repeatable read)] Gleiche Daten werden mehrmals gelesen, aber sind anders, da Werte durch nebenläufige Transaktionen verändert wurden.
+    \item[Phantom Read] Select in Tabelle => neue oder gelöschte Rows werden entdeckt.
+\end{description}
+
+\checked: möglich; -: unmöglich
+
+\begin{tabular}{llll}
+  Isolation & Dirty & Fuzzy & Phantom \\
   \hline
-  Read uncommited & \checked & (-) & \checked & \checked \\
-  \textbf{Read committed} & - & (-) & \checked & \checked \\
-  Repeatable read & - & - & - & \checked \\
-  Serializable & - & - & - & -
+  Read uncommited & \checked & \checked & \checked \\
+  \textbf{Read committed} & - & \checked & \checked \\
+  Repeatable read & - & - & \checked \\
+  Serializable & - & - & -
 \end{tabular}
 
 \subsection{Fehlerbehandlung}
@@ -281,21 +284,9 @@ Transaktionen \emph{undo}
 Loginhalt: [LSN (sequence number), TransaktionsID, PageID, Redo (SQL),
 Undo (SQL), PrevLSN]
 
-\section{Btree}
+\section{B-Tree (Balanced-Tree)}
 
-% TODO improve this info
-\includegraphics[width=\columnwidth]{bbaum.png}
-
-$k = 2 \Rightarrow k..2k$ keys (ausser root), max. 2k+1 Unterknoten.
-
-\begin{itemize}
-  \item Einfügen am Ordnungsplatz
-  \item Falls Überlauf: teilen
-  \item Neuer Knoten mit Zahlen rechts von mittlerer Zahl
-  \item Mitte $\rightarrow$ Vaterknoten
-  \item Neuer Knoten mit Vaterknoten verknüpfen
-  \item Falls Vaterknoten überfüllt: Neue Root, oder wieder teilen
-\end{itemize}
+\includegraphics[width=\columnwidth]{b_tree.jpg}
 
 \section{UML}
 
