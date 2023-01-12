@@ -31,11 +31,19 @@
 1:n via Fremdschlüssel (oder Zwischentabelle mit Attributen), n:n via
 Zwischentabelle.
 \subsection{Vererbung}
-% TODO maybe improve?
 \begin{itemize}
-\item{Eine Tabelle für Sub-/Superklasse, mit enum: \\ \sql{CREATE TYPE angtyp AS ENUM ('Chefin', 'Sysadmin')}}
-\item{Je eine Tabelle pro Subklasse}
-\item{Eine Superklasse-Tabelle mit allen Attributen (\verb!NULL!)}
+\item Eine Tabelle für Sub-/Superklasse, mit enum: \\
+    \sql{CREATE TYPE angtyp AS ENUM ('Chefin', 'Sysadmin')}
+    \\
+    Redundanzfrei. Auch für overlapping Vererbung geeignet.
+    \\
+    Viele Tabellen, Komplexe Zugriffe. Zusätzliches Typ Attribut.
+
+\item Je eine Tabelle pro Subklasse\\
+    Semantikverlust. Schlüssel-Eindeutigkeit ggf. über eigene Tabelle sicherstellen. Überlappende Vererbung kann nicht abgebildet werden.
+
+\item Eine Superklasse-Tabelle mit allen Attributen (\verb!NULL!)\\
+    Viele Null-Werte pro Tupel. Dritte oder höhere Normalform verletzt.
 \end{itemize}
 
 \section{SQL DDL (Data Definition Language)}
@@ -71,6 +79,14 @@ CREATE INDEX name ON tbl (col);
 
 DROP CONSTRAINT fk_AbtLAbt;
 \end{minted}
+
+% TODO keep this or drop?
+Index Gründe
+\begin{itemize}
+    \item Index Only Scan kann verwendet werden
+    \item Where Condition kann aufgrund B-Tree schneller ausgewertet werden
+    \item Sortieren geht schneller, da Werte in B-Tree bereits sortiert
+\end{itemize}
 
 ON DELETE:
 
@@ -213,9 +229,11 @@ WITH RECURSIVE unter ( persnr, name, chef ) AS
 
 \section{SQL DCL (Control)}
 \begin{minted}{sql}
-CREATE ROLE angguest WITH LOGIN PASSWORD 'hunter2'
-GRANT INSERT, SELECT ON TABLE "Ang" TO 'angguest';
-REVOKE UPDATE ON "Ang" FROM 'angguest';
+CREATE ROLE angguest [WITH LOGIN PASSWORD 'hunter2'];
+GRANT INSERT, SELECT, UPDATE ON myTable TO angguest;
+GRANT ALL ON myTable TO angguest WITH GRANT OPTION;
+GRANT myGroup to angguest;
+REVOKE UPDATE ON myTable FROM angguest;
 \end{minted}
 
 \section{Transactions}
@@ -242,19 +260,33 @@ Konfliktpotential: 2 Transaktionen, write involviert, dasselbe Obj
 \subsubsection{Schedule}
 \includegraphics[width=20em]{serial.png}
 
-\subsection{Concurrency Control}
+\subsection{Isolationsverfahren}
 
 \begin{description}
-\item[2-Phase-Locking]{Growing/Shrinking Phase: Vor Zugriff muss Objekt in Transaktion gesperrt werden. Sobald ein Lock freigegeben, dürfen keine weiteren mehr bezogen werden. Strict 2PL: Unlocks werden ganz am Ende von Transaktion freigegeben.}
+\item[2-Phase-Locking (2PL)]{Growing/Shrinking Phase: Vor Zugriff muss Objekt in Transaktion gesperrt werden. Sobald ein Lock freigegeben, dürfen keine weiteren mehr bezogen werden. Strict 2PL: Unlocks werden ganz am Ende von Transaktion freigegeben.}
 \item[Opfersuche]{Zyklus unterbrechen $\rightarrow$ (ggf. cascading) rollback}
-\item[Snapshot Isolation] von ganzer Tabelle wird 'Schattenkopie' angelegt
-\item[MVCC]{Nur von bearbeiteter Zeile wird 'Schattenkopie' angelegt}
-\item[Validation]{Snapshot, Commit, falls snapshot dirty: rollback}
+\item[Snapshot Isolation (SI)] von ganzer Tabelle wird 'Schattenkopie' angelegt
+\item[MVCC] Nur von bearbeiteter Zeile wird 'Schattenkopie' angelegt.
+Beim Schreiben werden Tupels mit x-Locks versehen. Beim Lesen werden keine Locks gesetzt/überprüft. Bei Änderungen im Commit prüfen, dass Objekte noch
+unverändert wie zum Snapshot-Zeitpunkt sind, sonst Rollback.
 \item[Deadlock-Voraussetzungen] mutex, geschachtelte locks, zyklisches Warten, locks ohne timeout
 \item[Locks] \emph{slock} nur lesend (shared mit reader) \emph{xlock} exklusiv
 \item[Optimistisches Locking] Prognose: Wenig writes. Kein slock, aber Zeitstempel prüfen.
 \item[Pessimistisches Locking] Prognose: Viel writes. slock und xlock.
 \end{description}
+
+\checked: möglich; -: unmöglich
+
+% TODO how do I get the title to break?
+\begin{tabularx}{\columnwidth}{c | c | c c | c}
+    . & Garantiert Serialisierbarkeit & Deadlocks & Cascading Rollbacks & Konflikt-Rollbacks \\
+    \hline
+    2PL & \checked & \checked & \checked & - \\
+    Strict 2PL & \checked & \checked & - & - \\
+    Preclaiming 2PL & \checked & - & - & - \\
+    Snapshot Isolation (SI) & - & \checked & - & \checked \\
+    SSI & \checked & \checked & - & \checked \\
+\end{tabularx}
 
 \subsection{Isolation levels}
 
@@ -266,13 +298,13 @@ Konfliktpotential: 2 Transaktionen, write involviert, dasselbe Obj
 
 \checked: möglich; -: unmöglich
 
-\begin{tabular}{llll}
-  Isolation & Dirty & Fuzzy & Phantom \\
+\begin{tabular}{lllll}
+  Isolation & Dirty & Fuzzy & Phantom & Write Skew \\
   \hline
-  Read uncommited & \checked & \checked & \checked \\
-  \textbf{Read committed} & - & \checked & \checked \\
-  Repeatable read & - & - & \checked \\
-  Serializable & - & - & -
+  Read uncommited & \checked & \checked & \checked & \checked \\
+  \textbf{Read committed} & - & \checked & \checked & \checked \\
+  Repeatable read & - & - & \checked & \checked \\
+  Serializable & - & - & - & \checked
 \end{tabular}
 
 \subsection{Fehlerbehandlung}
@@ -286,6 +318,7 @@ Undo (SQL), PrevLSN]
 
 \section{B-Tree (Balanced-Tree)}
 
+% TODO update this again with newest drawing
 \includegraphics[width=\columnwidth]{b_tree.jpg}
 
 \section{UML}
@@ -308,7 +341,7 @@ Vererbung mit subclass {\huge$\rightarrowtriangle$} superclass.
 \item[Entitätstyp]{Klasse}
 \item[Schlüsselkandidaten]{Minimale Attributskombinationen, die eine Entität
     gerade noch eindeutig identifizieren}
-\item[ACID]{Atomicity, Consistency, Isolation, Durability}
+\item[ACID]{Atomicity (Transaktion wird entweder vollständig oder gar nicht ausgeführt), Consistency, Isolation, Durability}
 \item[Indexe]{ISAM (Aufsteigend via Indexspalte, überlaufseiten möglich), Hash, BRIN, GiST, GIN, Btree, Bitmap. Kann funktional/zusammengesetzt/partiell/clustered sein.}
 \item[Mutationsanomalien]{Bei Redundanz. INSERT-, UPDATE-, DELETE-Anomalie}
 \item[Surrogatschlüssel]{Künstlicher Schlüssel, z.B. für Performance bei
