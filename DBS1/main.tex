@@ -31,6 +31,13 @@
 1:n via Fremdschlüssel (oder Zwischentabelle mit Attributen), n:n via
 Zwischentabelle.
 \subsection{Vererbung}
+\begin{description}
+    \item[incomplete] only some instances of the parent class are specialized (have unique attributes)
+    \item[complete] every instance of the parent class has one or more unique attributes that are not common to the parent class
+    \item[overlapping] object could be a member of more than one specialized subclass
+    \item[disjoint] object could be a member of only one specialized subclass
+\end{description}
+\vspace{3pt}
 \begin{itemize}
 \item Eine Tabelle für Sub-/Superklasse, mit enum: \\
     \sql{CREATE TYPE angtyp AS ENUM ('Chefin', 'Sysadmin')}
@@ -176,6 +183,8 @@ Salär (Wert ggf. wiederholt).
 \begin{minted}{sql}
 SELECT name, preis, rank() OVER(ORDER BY preis DESC)
 FROM game LIMIT 5;  -- 5 teuerste Games
+SELECT *, (LEAD(ankunftsZeit) OVER () - abfahrtsZeit)::time as x
+FROM fahrplan; -- Fahrtdauer
 \end{minted}
 
 \begin{description}
@@ -277,16 +286,16 @@ unverändert wie zum Snapshot-Zeitpunkt sind, sonst Rollback.
 
 \checked: möglich; -: unmöglich
 
-% TODO how do I get the title to break?
-\begin{tabularx}{\columnwidth}{c | c | c c | c}
+\begin{tabular}{p{70pt}p{40pt}p{30pt}p{40pt}p{40pt}}
     . & Garantiert Serialisierbarkeit & Deadlocks & Cascading Rollbacks & Konflikt-Rollbacks \\
+    % . & . & . & . & . \\
     \hline
     2PL & \checked & \checked & \checked & - \\
     Strict 2PL & \checked & \checked & - & - \\
     Preclaiming 2PL & \checked & - & - & - \\
-    Snapshot Isolation (SI) & - & \checked & - & \checked \\
+    Snapshot Isolation & - & \checked & - & \checked \\
     SSI & \checked & \checked & - & \checked \\
-\end{tabularx}
+\end{tabular}
 
 \subsection{Isolation levels}
 
@@ -318,7 +327,6 @@ Undo (SQL), PrevLSN]
 
 \section{B-Tree (Balanced-Tree)}
 
-% TODO update this again with newest drawing
 \includegraphics[width=\columnwidth]{b_tree.jpg}
 
 \section{UML}
