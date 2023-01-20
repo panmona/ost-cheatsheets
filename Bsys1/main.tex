@@ -290,8 +290,8 @@ Deshalb: \cinline{strnlen (char const *str, size_t max)}: Bricht nach max Zeiche
 von compiler überprüft, Tricks jedoch möglich, ausser global (Segmentation Fault)\vspace{2pt}
 
 von rechts nach links lesen
-\cinline{char const * const * c} -> c is (non-const) pointer to const pointer to const char
-
+\cinline{char const * const * c}\newline c is (non-const) pointer to const pointer to const char
+\vspace{4pt}
 wenn 'const' ganz links: \cinline{const char} <=> \cinline{char const}
 
 \subsection{structs}
@@ -372,7 +372,7 @@ easy variant for knowing how much memory to free:
 
 \includegraphics[width=0.12\textwidth]{buddies_1.jpg}
 
-Wird Bereich freigegeben: Überprürfen ob Buddy in \(2^k\)-Liste mit Freielementen
+Wird Bereich freigegeben: Überprüfen ob Buddy in \(2^k\)-Liste mit Freielementen
 
 \textbf{Nein}: Bereich hinzufügen zu Freielementen
 
