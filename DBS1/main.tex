@@ -115,9 +115,9 @@ DELETE FROM Mitarbeiter WHERE Abteilung_ID = 1;
 
 \subsection{Select}
 \begin{minted}{sql}
- SELECT DISTINCT Wohnort, Name FROM angestellter
- WHERE AbtNr=3 AND Name LIKE 'Mo%'
- ORDER BY Wohnort ASC, Name DESC;
+SELECT DISTINCT Wohnort, Name FROM angestellter
+WHERE AbtNr=3 AND Name LIKE 'Mo%'
+ORDER BY Wohnort ASC, Name DESC;
 \end{minted}
 
 \subsubsection{korrelierte Unterabfrage}
@@ -248,7 +248,7 @@ REVOKE UPDATE ON myTable FROM angguest;
 \section{Transactions}
 \begin{minted}[escapeinside=||]{sql}
 BEGIN TRANSACTION;
-    SET TRANSACTION |\colorbox{gray}{ISOLATION LEVEL SERIALIZABLE}|;
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
     INSERT INTO Ang (...) VALUES (...);
     SAVEPOINT ang_ok;
     UPDATE Ang SET ...;
