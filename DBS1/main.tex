@@ -238,10 +238,13 @@ WITH RECURSIVE unter ( persnr, name, chef ) AS
 
 \section{SQL DCL (Control)}
 \begin{minted}{sql}
-CREATE ROLE angguest [WITH LOGIN PASSWORD 'hunter2'];
-GRANT INSERT, SELECT, UPDATE ON myTable TO angguest;
-GRANT ALL ON myTable TO angguest WITH GRANT OPTION;
-GRANT myGroup to angguest;
+CREATE ROLE angguest
+    [WITH LOGIN PASSWORD 'hunter2'] [IN ROLE clients];
+GRANT CREATE, INSERT, SELECT, UPDATE ON myTable TO myuser;
+GRANT ALL ON [TABLE | SCHEMA | DATABASE] objectName
+    TO angguest WITH GRANT OPTION;
+GRANT myGroup TO angguest;
+ALTER GROUP clients ADD USER user;
 REVOKE UPDATE ON myTable FROM angguest;
 \end{minted}
 
