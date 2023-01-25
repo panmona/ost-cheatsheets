@@ -21,6 +21,7 @@
     \item[2.NF] Every non-key attribute \textbf{must} depend on entire primary key
     \item[3.NF] Every non-key attribute should depend on key, the whole key, and nothing but the key. (keine transitiven Abhängigkeiten)
 \end{description}
+\textbf{voll} funktional abhängig: von \underline{ganzem} Schlüssel abhängig
 
 \section{Relationales Modell}
 
@@ -38,9 +39,11 @@ Zwischentabelle.
     \item[disjoint] object could be a member of only one specialized subclass
 \end{description}
 \vspace{3pt}
-\begin{itemize}
+\begin{enumerate}
 \item Eine Tabelle für Sub-/Superklasse, mit enum: \\
     \sql{CREATE TYPE angtyp AS ENUM ('Chefin', 'Sysadmin')}
+    \\
+    \textbf{PK} von \textbf{Sub}-Tabelle ist auch \textbf{FK} auf \textbf{Super}-Tabelle
     \\
     Redundanzfrei. Auch für overlapping Vererbung geeignet.
     \\
@@ -51,7 +54,7 @@ Zwischentabelle.
 
 \item Eine Superklasse-Tabelle mit allen Attributen (\verb!NULL!)\\
     Viele Null-Werte pro Tupel. Dritte oder höhere Normalform verletzt.
-\end{itemize}
+\end{enumerate}
 
 \section{SQL DDL (Data Definition Language)}
 
@@ -62,10 +65,9 @@ CREATE TABLE Game (
   Name VARCHAR(300) NOT NULL,
   Date DATE DEFAULT CURRENT_DATE,
   FK_FOO INTEGER NOT NULL REFERENCES FooTable (id)
-  ...  -- ggf. constraints, ohne "ADD CONSTRAINT"
+  ...  -- ggf. constraints wie 'check', ohne "ADD CONSTRAINT"
 );
 \end{minted}
-% TODO: wie geht das mit constraint ohne "ADD CONSTRAINT" ????
 
 \begin{minted}{sql}
 ALTER TABLE Game
@@ -83,7 +85,7 @@ ALTER TABLE AbtLeitung
 ... CHECK (Salaer BETWEEN 1000 and 20000);
 
 CREATE INDEX name ON tbl (col);
-  WHERE state = 'N'; -- partiell
+  WHERE name = 'N'; -- partiell
 
 DROP CONSTRAINT fk_AbtLAbt;
 \end{minted}
@@ -246,7 +248,8 @@ GRANT ALL ON [TABLE | SCHEMA | DATABASE] objectName
     TO angguest WITH GRANT OPTION;
 GRANT myGroup TO angguest;
 ALTER GROUP clients ADD USER user;
-REVOKE UPDATE ON myTable FROM angguest;
+REVOKE UPDATE ON [TABLE | SCHEMA | DATABASE] objectName
+    FROM angguest;
 \end{minted}
 
 \section{Transactions}
