@@ -35,8 +35,8 @@ Zwischentabelle.
 \begin{description}
     \item[incomplete] only some instances of the parent class are specialized (have unique attributes)
     \item[complete] every instance of the parent class has one or more unique attributes that are not common to the parent class
-    \item[overlapping] object could be a member of more than one specialized subclass
-    \item[disjoint] object could be a member of only one specialized subclass
+    \item[overlapping] object can be a member of more than one specialized subclass
+    \item[disjoint] object can be a member of only one specialized subclass
 \end{description}
 \vspace{3pt}
 \begin{enumerate}
@@ -45,7 +45,8 @@ Zwischentabelle.
     \\
     \textbf{PK} von \textbf{Sub}-Tabelle ist auch \textbf{FK} auf \textbf{Super}-Tabelle
     \\
-    Redundanzfrei. Auch für overlapping Vererbung geeignet.
+    Redundanzfrei bezüglich Constraints.
+    \\Auch für overlapping Vererbung geeignet.
     \\
     Viele Tabellen, Komplexe Zugriffe. Zusätzliches Typ Attribut.
 
@@ -66,6 +67,7 @@ CREATE TABLE Game (
   Date DATE DEFAULT CURRENT_DATE,
   FK_FOO INTEGER NOT NULL REFERENCES FooTable (id)
   ...  -- ggf. constraints wie 'check', ohne "ADD CONSTRAINT"
+  PRIMARY KEY (col1, col2) -- Two Primary Keys
 );
 \end{minted}
 
@@ -83,14 +85,31 @@ ALTER TABLE AbtLeitung
     ON DELETE CASCADE;
 
 ... CHECK (Salaer BETWEEN 1000 and 20000);
+DROP CONSTRAINT fk_AbtLAbt;
 
 CREATE INDEX name ON tbl (col);
   WHERE name = 'N'; -- partiell
 
-DROP CONSTRAINT fk_AbtLAbt;
 \end{minted}
+\vspace{-7pt}
+ON DELETE:
+\begin{itemize}
+  \item \sql{CASCADE}: Tupel mit Fremdschlüssel werden gelöscht
+  \item \sql{NO ACTION / RESTRICT}: Fehler/Rollback
+  \item \sql{SET NULL}
+  \item \sql{SET DEFAULT}
+\end{itemize}
 
-% TODO keep this or drop?
+\vspace{3pt}
+Index:
+\begin{description}
+    \item[B-Tree] Default Index. Einziger Index, der uniqueness sicherstellt.
+    \item[GiST] Range/Containment Search
+    \item[SP-GIST] KNN. Für geometrische Datentypen.
+    \item[GIN] Geeignet für Arrays, Volltext. Speichert effizient Duplikate.
+    \item[BRIN] Gut für Range Search
+\end{description}
+
 Index Gründe
 \begin{itemize}
     \item Index Only Scan kann verwendet werden
@@ -98,14 +117,6 @@ Index Gründe
     \item Sortieren geht schneller, da Werte in B-Tree bereits sortiert
 \end{itemize}
 
-ON DELETE:
-
-\begin{itemize}
-  \item \sql{CASCADE}: Tupel mit Fremdschlüssel werden gelöscht
-  \item \sql{NO ACTION / RESTRICT}: Fehler/Rollback
-  \item \sql{SET NULL}
-  \item \sql{SET DEFAULT}
-\end{itemize}
 
 \section{SQL DML (Manipulation)}
 \begin{minted}{sql}
@@ -214,8 +225,6 @@ WITH RECURSIVE cte (spalten) AS
 SELECT spalten FROM cte WHERE ...;
 \end{minted}
 
-Beispiel:
-
 \begin{minted}{sql}
 WITH RECURSIVE unter ( persnr, name, chef ) AS
    (SELECT A.persnr, A.name, A.chef FROM angestellter A
@@ -253,6 +262,7 @@ REVOKE UPDATE ON [TABLE | SCHEMA | DATABASE] objectName
 \end{minted}
 
 \section{Transactions}
+In PostgreSQL: Keine Nested Transactions
 \begin{minted}[escapeinside=||]{sql}
 BEGIN TRANSACTION;
     SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
@@ -295,7 +305,6 @@ unverändert wie zum Snapshot-Zeitpunkt sind, sonst Rollback.
 
 \begin{tabular}{p{70pt}p{40pt}p{30pt}p{40pt}p{40pt}}
     . & Garantiert Serialisierbarkeit & Deadlocks & Cascading Rollbacks & Konflikt-Rollbacks \\
-    % . & . & . & . & . \\
     \hline
     2PL & \checked & \checked & \checked & - \\
     Strict 2PL & \checked & \checked & - & - \\
@@ -337,16 +346,12 @@ Undo (SQL), PrevLSN]
 
 \begin{description}
     \item[Vorteile]{Skalierbar, Permissions, Integrität, Live-Abfragen, Kapslung}
-    \item[Funktionen]{Transaktionen, Mehrbenutzer, Backups, $\ldots$}
     \item[3-Ebenen]{\emph{externe Ebene} (Anwendungen-Sicht), \emph{logische (konzeptionale) Ebene}
         (DB/konzeptionelles Schema, letzteres ist Modell der Realität), \emph{interne
             Ebene}. Durch Trennung: Datenunabhängigkeit}
-    \item[Datenbasis]{Daten auf HDD - Anwendungsdaten und Data Dictionary (Metadaten)}
-    \item[Entitätstyp]{Klasse}
     \item[Schlüsselkandidaten]{Minimale Attributskombinationen, die eine Entität
         gerade noch eindeutig identifizieren}
     \item[ACID]{Atomicity (Transaktion wird entweder vollständig oder gar nicht ausgeführt), Consistency, Isolation, Durability}
-    \item[Indexe]{ISAM (Aufsteigend via Indexspalte, überlaufseiten möglich), Hash, BRIN, GiST, GIN, Btree, Bitmap. Kann funktional/zusammengesetzt/partiell/clustered sein.}
     \item[Mutationsanomalien]{Bei Redundanz. INSERT-, UPDATE-, DELETE-Anomalie}
     \item[Surrogatschlüssel]{Künstlicher Schlüssel, z.B. für Performance bei
         zusammengesetztem Schlüssel}.
@@ -358,7 +363,7 @@ Undo (SQL), PrevLSN]
 
 \section{UML}
 
-\includegraphics[height=\columnwidth-2em,angle=90]{uml2.png}
+\includegraphics[height=\columnwidth-3em,angle=90]{uml2.png}
 
 Aggregation: $\lozenge$ Komposition: $\blacklozenge $
 
