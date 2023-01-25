@@ -65,6 +65,7 @@ CREATE TABLE Game (
   ...  -- ggf. constraints, ohne "ADD CONSTRAINT"
 );
 \end{minted}
+% TODO: wie geht das mit constraint ohne "ADD CONSTRAINT" ????
 
 \begin{minted}{sql}
 ALTER TABLE Game
@@ -328,6 +329,26 @@ Transaktionen \emph{undo}
 Loginhalt: [LSN (sequence number), TransaktionsID, PageID, Redo (SQL),
 Undo (SQL), PrevLSN]
 
+
+\section{Begriffe}
+
+\begin{description}
+    \item[Vorteile]{Skalierbar, Permissions, Integrität, Live-Abfragen, Kapslung}
+    \item[Funktionen]{Transaktionen, Mehrbenutzer, Backups, $\ldots$}
+    \item[3-Ebenen]{\emph{externe Ebene} (Anwendungen-Sicht), \emph{logische (konzeptionale) Ebene}
+        (DB/konzeptionelles Schema, letzteres ist Modell der Realität), \emph{interne
+            Ebene}. Durch Trennung: Datenunabhängigkeit}
+    \item[Datenbasis]{Daten auf HDD - Anwendungsdaten und Data Dictionary (Metadaten)}
+    \item[Entitätstyp]{Klasse}
+    \item[Schlüsselkandidaten]{Minimale Attributskombinationen, die eine Entität
+        gerade noch eindeutig identifizieren}
+    \item[ACID]{Atomicity (Transaktion wird entweder vollständig oder gar nicht ausgeführt), Consistency, Isolation, Durability}
+    \item[Indexe]{ISAM (Aufsteigend via Indexspalte, überlaufseiten möglich), Hash, BRIN, GiST, GIN, Btree, Bitmap. Kann funktional/zusammengesetzt/partiell/clustered sein.}
+    \item[Mutationsanomalien]{Bei Redundanz. INSERT-, UPDATE-, DELETE-Anomalie}
+    \item[Surrogatschlüssel]{Künstlicher Schlüssel, z.B. für Performance bei
+        zusammengesetztem Schlüssel}.
+\end{description}
+
 \section{B-Tree (Balanced-Tree)}
 
 \includegraphics[width=\columnwidth]{b_tree.jpg}
@@ -339,25 +360,6 @@ Undo (SQL), PrevLSN]
 Aggregation: $\lozenge$ Komposition: $\blacklozenge $
 
 Vererbung mit subclass {\huge$\rightarrowtriangle$} superclass.
-
-\section{Begriffe}
-
-\begin{description}
-\item[Vorteile]{Skalierbar, Permissions, Integrität, Live-Abfragen, Kapslung}
-\item[Funktionen]{Transaktionen, Mehrbenutzer, Backups, $\ldots$}
-\item[3-Ebenen]{\emph{externe Ebene} (Anwendungen-Sicht), \emph{logische (konzeptionale) Ebene}
-    (DB/konzeptionelles Schema, letzteres ist Modell der Realität), \emph{interne
-    Ebene}. Durch Trennung: Datenunabhängigkeit}
-\item[Datenbasis]{Daten auf HDD - Anwendungsdaten und Data Dictionary (Metadaten)}
-\item[Entitätstyp]{Klasse}
-\item[Schlüsselkandidaten]{Minimale Attributskombinationen, die eine Entität
-    gerade noch eindeutig identifizieren}
-\item[ACID]{Atomicity (Transaktion wird entweder vollständig oder gar nicht ausgeführt), Consistency, Isolation, Durability}
-\item[Indexe]{ISAM (Aufsteigend via Indexspalte, überlaufseiten möglich), Hash, BRIN, GiST, GIN, Btree, Bitmap. Kann funktional/zusammengesetzt/partiell/clustered sein.}
-\item[Mutationsanomalien]{Bei Redundanz. INSERT-, UPDATE-, DELETE-Anomalie}
-\item[Surrogatschlüssel]{Künstlicher Schlüssel, z.B. für Performance bei
-    zusammengesetztem Schlüssel}.
-\end{description}
 
 
 \end{multicols*}
