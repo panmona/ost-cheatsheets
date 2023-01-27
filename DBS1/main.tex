@@ -19,7 +19,7 @@
 \begin{description}
     \item[1.NF] Wertebereiche der Tabelle sind atomar: strukturierte Werte (Mengen, Wiederholungsgruppen etc.) sind nicht zugelassen (z.B. nicht Vor-/Nachname in 1 Attribut), hat PK
     \item[2.NF] Every non-key attribute \textbf{must} depend on entire primary key
-    \item[3.NF] Every non-key attribute should depend on key, the whole key, and nothing but the key. (keine transitiven Abhängigkeiten)
+    \item[3.NF] Every non-key attribute should depend on key, the whole key, and nothing but the key = keine transitiven Abhängigkeiten = kein Nichtschlüsselattribut Determinante
 \end{description}
 \textbf{voll} funktional abhängig: von \underline{ganzem} Schlüssel abhängig
 
@@ -169,13 +169,6 @@ Mit \sql{WHERE b.x IS NOT NULL}: ohne $A \cap B$
 \subsubsection{Outer join}
 \sqljoin{\fillA \fillB}{1 & \texttt{NULL} \\ 2 & 2 \\ \texttt{NULL} & 3}{SELECT * FROM a FULL OUTER JOIN b ON a.x = b.x;}
 
-\subsubsection{Andere}
-\begin{description}
-\item[natural]{Joinen nach gleichnamigen Attributen, Spalten nur 1x im Resultat}
-\item[theta]{RelAlg: join-operator $\Theta \in \{<, \leq, =, \geq, >\}$}
-\item[equi]{Join mit \verb|colA = colB|}
-\end{description}
-
 \subsection{Group By}
 \begin{minted}{sql}
 SELECT AVG(Lohn) FROM Ang
@@ -217,14 +210,13 @@ limit, offset, union, except, intersect; selbige Spalte nicht mehrmals
 WITH tmp AS (SELECT ...) SELECT * FROM tmp;
 \end{minted}
 
-Rekursiv:
-
 \begin{minted}{sql}
 WITH RECURSIVE cte (spalten) AS
    (Ursprungsselect UNION ALL Rekursionsselect)
 SELECT spalten FROM cte WHERE ...;
 \end{minted}
 
+Chefin mit allen Untergebenen
 \begin{minted}{sql}
 WITH RECURSIVE unter ( persnr, name, chef ) AS
    (SELECT A.persnr, A.name, A.chef FROM angestellter A
@@ -247,6 +239,16 @@ WITH RECURSIVE unter ( persnr, name, chef ) AS
 \item[3-Werte-Logik]{true/false/unknown. Skalarer Ausdruck/Vergleich mit NULL: NULL.}
 \item[Alter]{\sql{SELECT ((current_date - gebdat) / 365) AS Alter}}
 \end{description}
+
+% Query die sowohl in HS21 und HS22 vorgekommen ist.
+\begin{minted}{sql}
+SELECT platz.name, Anzahl
+FROM ( SELECT platz AS platzId, COUNT(DISTINCT parade) AS Anzahl
+FROM parade_plan
+GROUP BY platz
+) as x
+INNER JOIN platz ON platz.id = "platzId"
+\end{minted}
 
 \section{SQL DCL (Control)}
 \begin{minted}{sql}
@@ -332,16 +334,6 @@ unverändert wie zum Snapshot-Zeitpunkt sind, sonst Rollback.
   Serializable & - & - & - & \checked
 \end{tabular}
 
-\subsection{Fehlerbehandlung}
-WAL (write ahead log): Zuerst Log schreiben, dann commit.
-
-Loganalyse $\rightarrow$ Fertige Transaktionen \emph{redo}, angebrochene
-Transaktionen \emph{undo}
-
-Loginhalt: [LSN (sequence number), TransaktionsID, PageID, Redo (SQL),
-Undo (SQL), PrevLSN]
-
-
 \section{Begriffe}
 
 \begin{description}
@@ -359,6 +351,7 @@ Undo (SQL), PrevLSN]
 
 \section{B-Tree (Balanced-Tree)}
 
+% Adapted from: https://youtu.be/94ErZ5K8XZg
 \includegraphics[width=\columnwidth]{b_tree.jpg}
 
 \section{UML}
