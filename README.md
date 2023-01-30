@@ -8,3 +8,4 @@ Currently available cheatsheets:
 - [OOP1](OOP1)
 - [OOP2](OOP2)
 - [Bsys1](Bsys1)
+- [DBS1](DBS1)
