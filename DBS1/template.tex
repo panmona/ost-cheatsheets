@@ -1,0 +1,82 @@
+\documentclass[10pt,landscape,a4paper]{article}
+\usepackage{multicol}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{minted}
+\usepackage{venndiagram}
+\usepackage{cancel}
+\usepackage{wasysym}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+
+\usepackage[top=5mm,bottom=1mm,left=5mm,right=5mm,includehead]{geometry}
+
+%define header and footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+\fancyhead[RO]{\AUTHOR\hspace{4pt}|\hspace{4pt}\INSTITUTE}
+\fancyhead[LO]{\TITLE}
+\usepackage[style=iso]{datetime2}
+\fancyfoot[RO]{\today}
+\renewcommand\headrulewidth{0pt}
+\renewcommand\footrulewidth{0pt}
+\headsep = -2pt
+\footskip = 0pt
+
+% Graphics
+\usepackage{graphicx}
+\graphicspath{{graphics/}}
+
+% Redefine section commands to use less space
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{0mm}%
+    {-1ex plus -.5ex minus -.2ex}%
+    {0.5ex plus .2ex}%x
+    {\normalfont\large\bfseries}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0mm}%
+    {-1explus -.5ex minus -.2ex}%
+    {0.5ex plus .2ex}%
+    {\normalfont\small\bfseries}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{0mm}%
+    {-1ex plus -.5ex minus -.2ex}%
+    {1ex plus .2ex}%
+    {\normalfont\footnotesize\bfseries}}
+\renewcommand{\@venn@radius}{4mm}
+\renewcommand{\@venn@overlap}{2mm}
+\renewcommand{\@venn@vgap}{1mm}
+\renewcommand{\@venn@hgap}{1mm}
+\makeatother
+
+% Don't print section numbers
+\setcounter{secnumdepth}{0}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt plus 0.5ex}
+
+\newcommand{\sqljoin}[3]{
+    \begin{multicols*}{2}
+        \begin{venndiagram2sets}
+            #1
+        \end{venndiagram2sets}
+        \vfill\columnbreak
+        \hspace{-8em}
+        \begin{tabular}{ll}
+            x & y \\
+            \hline
+            #2
+        \end{tabular}
+    \end{multicols*}
+    \mint{sql}{#3}
+}
+
+\newcommand{\sql}[1]{\mintinline{sql}{#1}}
+
+% Smaller Lists
+\usepackage{enumitem}
+\setlist[itemize,enumerate]{leftmargin=3mm, labelindent=0mm, labelwidth=1mm, labelsep=1mm, nosep}
+\setlist[description]{leftmargin=0mm, nosep}
+
+
+% TODO still use at the end or rather not?
+\usepackage{tabularx}

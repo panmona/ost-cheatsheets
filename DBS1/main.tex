@@ -1,0 +1,367 @@
+\input{./template.tex}
+\newcommand{\TITLE}{Datenbanksysteme 1}
+\newcommand{\AUTHOR}{Florian Bruhin, Mona Panchaud}
+\newcommand{\INSTITUTE}{Ostschweizer Fachhochschule}
+\begin{document}
+
+\footnotesize
+\begin{multicols*}{3}
+
+% multicol parameters
+% These lengths are set only within the two main columns
+%\setlength{\columnseprule}{0.25pt}
+\setlength{\premulticols}{1pt}
+\setlength{\postmulticols}{1pt}
+\setlength{\multicolsep}{1pt}
+\setlength{\columnsep}{2pt}
+
+\section{Normalformen}
+\begin{description}
+    \item[1.NF] Wertebereiche der Tabelle sind atomar: strukturierte Werte (Mengen, Wiederholungsgruppen etc.) sind nicht zugelassen (z.B. nicht Vor-/Nachname in 1 Attribut), hat PK
+    \item[2.NF] Every non-key attribute \textbf{must} depend on entire primary key
+    \item[3.NF] Every non-key attribute should depend on key, the whole key, and nothing but the key = keine transitiven Abhängigkeiten = kein Nichtschlüsselattribut Determinante
+\end{description}
+\textbf{voll} funktional abhängig: von \underline{ganzem} Schlüssel abhängig
+
+\section{Relationales Modell}
+
+\texttt{Game (\underline{Id} INT PK, Name TEXT UNIQUE, Zu1Beziehung INT NOT NULL REFERENCES TblB, Zu0Beziehung INT REFERENCES TblC)}
+
+\section{Abbildung}
+\subsection{1:n/n:n Beziehungen}
+1:n via Fremdschlüssel (oder Zwischentabelle mit Attributen), n:n via
+Zwischentabelle.
+\subsection{Vererbung}
+\begin{description}
+    \item[incomplete] only some instances of the parent class are specialized (have unique attributes)
+    \item[complete] every instance of the parent class has one or more unique attributes that are not common to the parent class
+    \item[overlapping] object can be a member of more than one specialized subclass
+    \item[disjoint] object can be a member of only one specialized subclass
+\end{description}
+\vspace{3pt}
+\begin{enumerate}
+\item Eine Tabelle für Sub-/Superklasse, mit enum: \\
+    \sql{CREATE TYPE angtyp AS ENUM ('Chefin', 'Sysadmin')}
+    \\
+    \textbf{PK} von \textbf{Sub}-Tabelle ist auch \textbf{FK} auf \textbf{Super}-Tabelle
+    \\
+    Redundanzfrei bezüglich Constraints.
+    \\Auch für overlapping Vererbung geeignet.
+    \\
+    Viele Tabellen, Komplexe Zugriffe. Zusätzliches Typ Attribut.
+
+\item Je eine Tabelle pro Subklasse\\
+    Semantikverlust. Schlüssel-Eindeutigkeit ggf. über eigene Tabelle sicherstellen. Überlappende Vererbung kann nicht abgebildet werden.
+
+\item Eine Superklasse-Tabelle mit allen Attributen (\verb!NULL!)\\
+    Viele Null-Werte pro Tupel. Dritte oder höhere Normalform verletzt.
+\end{enumerate}
+
+\section{SQL DDL (Data Definition Language)}
+
+\begin{minted}{sql}
+CREATE DATABASE foo WITH OWNER = 'bar';
+CREATE TABLE Game (
+  ArticleID INTEGER PRIMARY KEY,
+  Name VARCHAR(300) NOT NULL,
+  Date DATE DEFAULT CURRENT_DATE,
+  FK_FOO INTEGER NOT NULL REFERENCES FooTable (id)
+  ...  -- ggf. constraints wie 'check', ohne "ADD CONSTRAINT"
+  PRIMARY KEY (col1, col2) -- Two Primary Keys
+);
+\end{minted}
+
+\begin{minted}{sql}
+ALTER TABLE Game
+  ADD Kuerzel TYPE CHAR;
+  ALTER COLUMN Date TYPE STRING;
+\end{minted}
+
+\begin{minted}{sql}
+ALTER TABLE AbtLeitung
+  ADD CONSTRAINT fk_AbtLAbt
+    FOREIGN KEY (AbtNr) REFERENCES Abteilung (AbtNr)
+    -- AbtLeitung wird gelöscht wenn Abteilung gelöscht wird
+    ON DELETE CASCADE;
+
+... CHECK (Salaer BETWEEN 1000 and 20000);
+DROP CONSTRAINT fk_AbtLAbt;
+
+CREATE INDEX name ON tbl (col);
+  WHERE name = 'N'; -- partiell
+
+\end{minted}
+\vspace{-7pt}
+ON DELETE:
+\begin{itemize}
+  \item \sql{CASCADE}: Tupel mit Fremdschlüssel werden gelöscht
+  \item \sql{NO ACTION / RESTRICT}: Fehler/Rollback
+  \item \sql{SET NULL}
+  \item \sql{SET DEFAULT}
+\end{itemize}
+
+\vspace{3pt}
+Index:
+\begin{description}
+    \item[B-Tree] Default Index. Einziger Index, der uniqueness sicherstellt.
+    \item[GiST] Range/Containment Search
+    \item[SP-GIST] KNN. Für geometrische Datentypen.
+    \item[GIN] Geeignet für Arrays, Volltext. Speichert effizient Duplikate.
+    \item[BRIN] Gut für Range Search
+\end{description}
+
+Index Gründe
+\begin{itemize}
+    \item Index Only Scan kann verwendet werden
+    \item Where Condition kann aufgrund B-Tree schneller ausgewertet werden
+    \item Sortieren geht schneller, da Werte in B-Tree bereits sortiert
+\end{itemize}
+
+
+\section{SQL DML (Manipulation)}
+\begin{minted}{sql}
+INSERT INTO abteilung VALUES (1, 'Verkauf');
+UPDATE Ang set salaer = 30000 WHERE persnr = 1100;
+DELETE FROM Mitarbeiter WHERE Abteilung_ID = 1;
+\end{minted}
+
+\section{SQL DQL (Query)}
+
+\subsection{Select}
+\begin{minted}{sql}
+SELECT DISTINCT Wohnort, Name FROM angestellter
+WHERE AbtNr=3 AND Name LIKE 'Mo%'
+ORDER BY Wohnort ASC, Name DESC;
+\end{minted}
+
+\subsubsection{korrelierte Unterabfrage}
+
+\begin{minted}[escapeinside=||]{sql}
+SELECT * from Products p WHERE Quantity <
+ (SELECT AVG(Quantity) FROM Items s WHERE |\colorbox{yellow}{p.ID}| = s.ID);
+\end{minted}
+
+\begin{description}
+\item[Projektion]{$\pi_{\mathrm{foo, bar}}(A)$ \\
+    \sql{SELECT foo, bar FROM A;}}
+\item[Selektion]{$\sigma_{\mathrm{ID < 10}}(A)$ \\
+    \sql{SELECT * FROM A WHERE ID < 10;}}
+\item[Umbenennung]{$\rho_{\mathrm{foo} \leftarrow \mathrm{bar}}$ \\
+  \sql{SELECT foo AS bar FROM ...;}}
+\item[Vereinigung]{$A \cup B$ \\
+    \sql{SELECT * FROM A UNION [ALL] SELECT * FROM b;}}
+\item[Durchschnitt]{$A \cap B$ \\
+    \sql{SELECT * FROM A INTERSECT SELECT * FROM b;}}
+\end{description}
+
+\subsection{Join ($\bowtie$)}
+
+\texttt{a.x}: 1, 2 \hspace{2em} \texttt{b.y}: 2, 3
+
+\subsubsection{Inner Join}
+\sqljoin{\fillACapB}{2 & 2}{SELECT * FROM a INNER JOIN b ON a.x = b.y;}
+
+\subsubsection{Left Join}
+\sqljoin{\fillA}{1 & \texttt{NULL} \\ 2 & 2}{SELECT * FROM a LEFT JOIN b ON a.x = b.x;}
+right: dito.
+Mit \sql{WHERE b.x IS NOT NULL}: ohne $A \cap B$
+
+\subsubsection{Outer join}
+\sqljoin{\fillA \fillB}{1 & \texttt{NULL} \\ 2 & 2 \\ \texttt{NULL} & 3}{SELECT * FROM a FULL OUTER JOIN b ON a.x = b.x;}
+
+\subsection{Group By}
+\begin{minted}{sql}
+SELECT AVG(Lohn) FROM Ang
+GROUP BY Abtnr HAVING AVG(Lohn) > 7000;
+\end{minted}
+
+Aggregate functions: \sql{COUNT, FIRST, LAST, MAX, MIN, SUM, AVG} \\
+\sql{NULL} wird übersprungen/nicht gezählt
+
+\subsection{Window functions}
+\begin{minted}{sql}
+SELECT abtnr, MAX(salaer) OVER (PARTITION BY abtnr) FROM Ang;
+\end{minted}
+
+Tupel werden beibehalten, wir machen nur eine neue Spalte mit dem maximalen
+Salär (Wert ggf. wiederholt).
+
+\subsubsection{rank / lead / lag}
+\begin{minted}{sql}
+SELECT name, preis, rank() OVER(ORDER BY preis DESC)
+FROM game LIMIT 5;  -- 5 teuerste Games
+SELECT *, (LEAD(ankunftsZeit) OVER () - abfahrtsZeit)::time as x
+FROM fahrplan; -- Fahrtdauer
+\end{minted}
+
+\begin{description}
+  \item[lag(val, offset=1, default=NULL)]{Wert von \emph{offset} Reihen vorher
+      (\textbf{lead}: Nachher)}
+\end{description}
+
+\subsection{Views}
+\sql{CREATE VIEW name AS SELECT ...;}
+
+Updatable: Kein \sql{FROM}-Eintrag; kein with, distinct, group by, having,
+limit, offset, union, except, intersect; selbige Spalte nicht mehrmals
+
+\subsection{CTE}
+\begin{minted}{sql}
+WITH tmp AS (SELECT ...) SELECT * FROM tmp;
+\end{minted}
+
+\begin{minted}{sql}
+WITH RECURSIVE cte (spalten) AS
+   (Ursprungsselect UNION ALL Rekursionsselect)
+SELECT spalten FROM cte WHERE ...;
+\end{minted}
+
+Chefin mit allen Untergebenen
+\begin{minted}{sql}
+WITH RECURSIVE unter ( persnr, name, chef ) AS
+   (SELECT A.persnr, A.name, A.chef FROM angestellter A
+    WHERE A.chef = 1010    UNION ALL
+    SELECT A.persnr, A.name, A.chef FROM angestellter A
+    INNER JOIN unter B on B.persnr = A.chef
+) SELECT * FROM unter ORDER BY chef, persnr;
+\end{minted}
+
+\subsection{Varia}
+
+\begin{description}
+\item[Scalar fns]{\sql{[U/L]CASE}, \sql{MID(n, s, len)}, \sql{LEN}, \sql{ROUND}, $\ldots$}
+\item[EXISTS]{\sql{SELECT * FROM a WHERE EXISTS (SELECT ...)};}
+\item[ANY/ALL]{\sql{SELECT * FROM a WHERE a.x < ANY (SELECT ...)};}
+\item[IN]{\sql{SELECT * FROM a WHERE a.x IN (1, 2);}}
+\item[CAST]{\sql{SELECT CAST(CASE WHEN tot IS NULL THEN 1 ELSE 0 END} \\ \sql{AS
+      BOOLEAN);} - alternativ: \sql{(tot IS NULL) AS foo;}}
+\item[COALESCE]{\sql{COALESCE(n1, n2, "def");}, erster non-NULL Wert}
+\item[3-Werte-Logik]{true/false/unknown. Skalarer Ausdruck/Vergleich mit NULL: NULL.}
+\item[Alter]{\sql{SELECT ((current_date - gebdat) / 365) AS Alter}}
+\end{description}
+
+% Query die sowohl in HS21 und HS22 vorgekommen ist.
+\begin{minted}{sql}
+SELECT platz.name, Anzahl
+FROM ( SELECT platz AS platzId, COUNT(DISTINCT parade) AS Anzahl
+FROM parade_plan
+GROUP BY platz
+) as x
+INNER JOIN platz ON platz.id = "platzId"
+\end{minted}
+
+\section{SQL DCL (Control)}
+\begin{minted}{sql}
+CREATE ROLE angguest
+    [WITH LOGIN PASSWORD 'hunter2'] [IN ROLE clients];
+GRANT CREATE, INSERT, SELECT, UPDATE ON myTable TO myuser;
+GRANT ALL ON [TABLE | SCHEMA | DATABASE] objectName
+    TO angguest WITH GRANT OPTION;
+GRANT myGroup TO angguest;
+ALTER GROUP clients ADD USER user;
+REVOKE UPDATE ON [TABLE | SCHEMA | DATABASE] objectName
+    FROM angguest;
+\end{minted}
+
+\section{Transactions}
+In PostgreSQL: Keine Nested Transactions
+\begin{minted}[escapeinside=||]{sql}
+BEGIN TRANSACTION;
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    INSERT INTO Ang (...) VALUES (...);
+    SAVEPOINT ang_ok;
+    UPDATE Ang SET ...;
+    ROLLBACK TO SAVEPOINT ang_ok;
+COMMIT TRANSACTION;
+\end{minted}
+
+
+\subsection{Serialisierbarkeit}
+$r_{1}(x)$: T1 liest x / $w_{1}(x)$: T1 schreibt x / $c_{1}$: T1 commit
+
+Konfliktpotential: 2 Transaktionen, write involviert, dasselbe Obj
+
+\newcommand{\ta}[2]{{\color{blue}#1_{1}#2}}
+\newcommand{\tb}[2]{{\color{red}#1_{2}#2}}
+\newcommand{\tc}[2]{{\color{green}#1_{3}#2}}
+
+\subsubsection{Schedule}
+\includegraphics[width=20em]{serial.png}
+
+\subsection{Isolationsverfahren}
+
+\begin{description}
+\item[2-Phase-Locking (2PL)]{Growing/Shrinking Phase: Vor Zugriff muss Objekt in Transaktion gesperrt werden. Sobald ein Lock freigegeben, dürfen keine weiteren mehr bezogen werden. Strict 2PL: Unlocks werden ganz am Ende von Transaktion freigegeben.}
+\item[Opfersuche]{Zyklus unterbrechen $\rightarrow$ (ggf. cascading) rollback}
+\item[Snapshot Isolation (SI)] von ganzer Tabelle wird 'Schattenkopie' angelegt
+\item[MVCC] Nur von bearbeiteter Zeile wird 'Schattenkopie' angelegt.
+Beim Schreiben werden Tupels mit x-Locks versehen. Beim Lesen werden keine Locks gesetzt/überprüft. Bei Änderungen im Commit prüfen, dass Objekte noch
+unverändert wie zum Snapshot-Zeitpunkt sind, sonst Rollback.
+\item[Deadlock-Voraussetzungen] mutex, geschachtelte locks, zyklisches Warten, locks ohne timeout
+\item[Locks] \emph{slock} nur lesend (shared mit reader) \emph{xlock} exklusiv
+\item[Optimistisches Locking] Prognose: Wenig writes. Kein slock, aber Zeitstempel prüfen.
+\item[Pessimistisches Locking] Prognose: Viel writes. slock und xlock.
+\end{description}
+
+\checked: möglich; -: unmöglich
+
+\begin{tabular}{p{70pt}p{40pt}p{30pt}p{40pt}p{40pt}}
+    . & Garantiert Serialisierbarkeit & Deadlocks & Cascading Rollbacks & Konflikt-Rollbacks \\
+    \hline
+    2PL & \checked & \checked & \checked & - \\
+    Strict 2PL & \checked & \checked & - & - \\
+    Preclaiming 2PL & \checked & - & - & - \\
+    Snapshot Isolation & - & \checked & - & \checked \\
+    SSI & \checked & \checked & - & \checked \\
+\end{tabular}
+
+\subsection{Isolation levels}
+
+\begin{description}
+    \item[Dirty Read] Daten von nicht commiteter Transaktion werden gelesen. Andere Transaktion macht zB Rollback, es werden falsche Berechnungen gemacht.
+    \item[Fuzzy Read (Non-Repeatable read)] Gleiche Daten werden mehrmals gelesen, aber sind anders, da Werte durch nebenläufige Transaktionen verändert wurden.
+    \item[Phantom Read] Select in Tabelle => neue oder gelöschte Rows werden entdeckt.
+\end{description}
+
+\checked: möglich; -: unmöglich
+
+\begin{tabular}{lllll}
+  Isolation & Dirty & Fuzzy & Phantom & Write Skew \\
+  \hline
+  Read uncommited & \checked & \checked & \checked & \checked \\
+  \textbf{Read committed} & - & \checked & \checked & \checked \\
+  Repeatable read & - & - & \checked & \checked \\
+  Serializable & - & - & - & \checked
+\end{tabular}
+
+\section{Begriffe}
+
+\begin{description}
+    \item[Vorteile]{Skalierbar, Permissions, Integrität, Live-Abfragen, Kapslung}
+    \item[3-Ebenen]{\emph{externe Ebene} (Anwendungen-Sicht), \emph{logische (konzeptionale) Ebene}
+        (DB/konzeptionelles Schema, letzteres ist Modell der Realität), \emph{interne
+            Ebene}. Durch Trennung: Datenunabhängigkeit}
+    \item[Schlüsselkandidaten]{Minimale Attributskombinationen, die eine Entität
+        gerade noch eindeutig identifizieren}
+    \item[ACID]{Atomicity (Transaktion wird entweder vollständig oder gar nicht ausgeführt), Consistency, Isolation, Durability}
+    \item[Mutationsanomalien]{Bei Redundanz. INSERT-, UPDATE-, DELETE-Anomalie}
+    \item[Surrogatschlüssel]{Künstlicher Schlüssel, z.B. für Performance bei
+        zusammengesetztem Schlüssel}.
+\end{description}
+
+\section{B-Tree (Balanced-Tree)}
+
+% Adapted from: https://youtu.be/94ErZ5K8XZg
+\includegraphics[width=\columnwidth]{b_tree.jpg}
+
+\section{UML}
+
+\includegraphics[height=\columnwidth-3em,angle=90]{uml2.png}
+
+Aggregation: $\lozenge$ Komposition: $\blacklozenge $
+
+Vererbung mit subclass {\huge$\rightarrowtriangle$} superclass.
+
+
+\end{multicols*}
+\end{document}
