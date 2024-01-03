@@ -4,6 +4,7 @@
 \newcommand{\AUTHOR}{Mona Panchaud}
 \newcommand{\INSTITUTE}{Ostschweizer Fachhochschule}
 
+
 \begin{document}
 \begin{multicols*}{4}
 
@@ -24,10 +25,93 @@
 \begin{minipage}[c]{.4\linewidth}
     \includegraphics[width=\linewidth]{spa_arch}
 \end{minipage}%
-\\ % <- important
+\\ % important
 
-\subsection{Vor / Nachteile}
+\subsection{Routing}
+Browser fakes the URL change.
+\\
+Use \textbf{Anchors \#} or \textbf{window.history} API
 
+\subsection{Bundling with WebPack}
+\begin{description}
+    \item[Entry] Startpunkt wo Webpack mit Bundling beginnt und
+    Dependencies findet.
+    \item[Output] Where to bundle your application.
+    \item[Loaders] Transformiert Dateien in Module. (\textit{module})
+    \item[Mode] Enable built-in \textit{optimization} mechanisms.
+\end{description}
+
+% TODO probably move me somewhere else when we get to Angular. Or remove me completely
+\subsection{Dependency Injection}
+\begin{itemize}
+    \item Reduced coupling between consumer and impl.
+    \item Classes relate to each other not directly but by interfaces
+    \item Allows flexible replacement of implementation
+\end{itemize}
+
+\section{React}
+
+\subsection{JSX}
+JSX wird vom Präprozessor zu \mintinline{jsx}|React.createElement| Aufrufen umgewandelt => React import nötig!
+\begin{minted}{jsx}
+import React from 'react'
+
+const menu = entries.map(entry =>
+  <ListItem as="a" to={`/${entry.path}`}>
+    <h1>{entry.title.toUpperCase()}</h1>
+    <p className="lg">{entry.subtitle}</p>
+  </ListItem>
+)
+\end{minted}
+
+\subsubsection{Conditionals}
+\begin{minted}{jsx}
+{ error &&
+    <Message>Fehler: {error}</Message> }
+{ error ? <span>Fehler: {error}</span>
+        : <span>OK!</span>             }
+\end{minted}
+
+\subsubsection{Function \& Const}
+\begin{minted}{jsx}
+function HelloMessage(props) {
+  return <div>Hello {props.name}</div>;
+}
+const HelloMessage =
+  (props) => <div>Hello {props.name}</div>;
+\end{minted}
+
+\subsection{Mounting}
+Komponenten müssen gemounted werden damit diese angezeigt werden können.
+\begin{minted}{jsx}
+const root = ReactDOM.createRoot(
+  document.getElementById('root'));
+root.render(<App />);
+\end{minted}
+
+\subsection{Props}
+Alle Parameter sind in \textbf{props} Objekt. Read-only!
+
+\subsection{State}
+\begin{itemize}
+    \item \textbf{useState} immer in derselben Reihenfolge aufrufen!
+    \item Keine von Props abgeleiteten Daten im State!
+    \item Props bevorzugen!
+\end{itemize}
+
+\begin{minted}{jsx}
+const [value, setValue] = useState(0);
+const increment =
+  () => setCounter(counter + 1);
+return
+  <button onClick={increment}>Inc</button>
+\end{minted}
+
+Weiter ab Reat Folie 44
+
+\section{Angular}
+
+\section{ASP.NET}
 
 \end{multicols*}
 \end{document}
