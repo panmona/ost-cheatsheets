@@ -1,0 +1,174 @@
+% Document
+\documentclass[fontsize=8pt,paper=a4,paper=landscape,DIV=calc,]{scrartcl}
+\usepackage[T1]{fontenc}
+\usepackage{noto}
+\usepackage[nswissgerman,english]{babel}
+\renewcommand{\familydefault}{\sfdefault}
+
+% Format
+\usepackage[top=5mm,bottom=1mm,left=5mm,right=5mm,includehead]{geometry}
+\setlength{\headheight}{\baselineskip}
+\setlength{\headsep}{0mm}
+
+\usepackage{multicol}
+\setlength{\columnsep}{2mm}
+\setlength{\columnseprule}{0.1pt}
+
+% Color
+\usepackage[svgnames]{xcolor}
+
+% Math
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\newcommand*{\eq}{=}
+
+%% Venn Diagrams
+\usepackage{venndiagram}
+
+%% Trees
+%%% https://tex.stackexchange.com/a/425271
+\usepackage{forest}
+\forestset{
+    ptree/.style={
+        for tree={
+            % grow'=0,
+            % parent anchor=children,
+            % child anchor=parent,
+            grow'=east,
+            parent anchor=east,
+            child anchor=west,
+            text width=7mm
+        },
+        before typesetting nodes={
+            for tree={
+                split option={content}{:}{content, my edge label},
+            },
+        },
+    },
+    my edge label/.style={
+        if={
+            > O_= {n'}{1}
+        }{
+            edge label={node [midway, below left, font=\tiny] {#1} }
+        }{
+            edge label={node [midway, above left, font=\tiny] {#1} }
+        },
+    }
+}
+
+% Code
+\usepackage{listings}
+
+\definecolor{ocherCode}{rgb}{1, 0.5, 0} % #FF7F00 -> rgb(239, 169, 0)
+\definecolor{blueCode}{rgb}{0, 0, 0.93} % #0000EE -> rgb(0, 0, 238)
+\definecolor{greenCode}{rgb}{0, 0.6, 0} % #009900 -> rgb(0, 153, 0)
+\definecolor{teal}{rgb}{0.0, 0.5, 0.5}
+
+\lstdefinestyle{code}{
+    identifierstyle=\color{black},
+    keywordstyle=\color{blue}\bfseries\small,
+    ndkeywordstyle=\color{greenCode}\bfseries\small,
+    stringstyle=\color{ocherCode}\ttfamily\small,
+    commentstyle=\color{teal}\ttfamily\textit\small,
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    belowskip=0pt,
+    aboveskip=0pt
+}
+
+\lstset{
+   extendedchars=true,
+   basicstyle=\footnotesize\ttfamily,
+   tabsize=2,
+   breaklines=true,
+   showspaces=false,
+   showtabs=false
+   showstringspaces=false,
+   style=code
+}
+
+%% https://tex.stackexchange.com/a/536018
+%% Allow for German characters in lstlistings.
+\lstset{literate=
+    {Ö}{{\"O}}1
+    {Ä}{{\"A}}1
+    {Ü}{{\"U}}1
+    {ü}{{\"u}}1
+    {ä}{{\"a}}1
+    {ö}{{\"o}}1
+}
+
+%% Easier inline code
+\newcommand{\cinline}[1]{\lstinline[language=c]|#1|}
+\newcommand{\jinline}[1]{\lstinline[language=java]|#1|}
+\newcommand{\csinline}[1]{\lstinline[language={[Sharp]C}]|#1|}
+
+% Images
+\usepackage{graphicx}
+\graphicspath{{graphics/}}
+
+% Links
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+}
+
+% Smaller Lists
+\usepackage{enumitem}
+\setlist[itemize,enumerate]{leftmargin=3mm, labelindent=0mm, labelwidth=1mm, labelsep=1mm, nosep}
+\setlist[description]{leftmargin=0mm, nosep}
+\setlength{\parindent}{0cm}
+
+% Smaller Titles
+\usepackage[explicit]{titlesec}
+
+%% Color Boxes
+\newcommand{\sectioncolor}[1]{\colorbox{black!60}{\parbox{0.97\linewidth}{\color{white}#1}}}
+\newcommand{\subsectioncolor}[1]{\colorbox{black!50}{\parbox{0.97\linewidth}{\color{white}#1}}}
+\newcommand{\subsubsectioncolor}[1]{\colorbox{black!40}{\parbox{0.97\linewidth}{\color{white}#1}}}
+\newcommand{\paragraphcolor}[1]{\colorbox{black!30}{\parbox{0.97\linewidth}{\color{white}#1}}}
+\newcommand{\subparagraphcolor}[1]{\colorbox{black!20}{\parbox{0.97\linewidth}{\color{white}#1}}}
+
+%% Title Format
+\titleformat{\section}{\vspace{0.5mm}\bfseries}{}{0mm}{\sectioncolor{\thesection.~#1}}[{\vspace{0.5mm}}]
+\titleformat{\subsection}{\vspace{0.5mm}\bfseries}{}{0mm}{\subsectioncolor{\thesubsection~#1}}[{\vspace{0.5mm}}]
+\titleformat{\subsubsection}{\vspace{0.5mm}\bfseries}{}{0mm}{\subsubsectioncolor{\thesubsubsection~#1}}[{\vspace{0.5mm}}]
+\titleformat{\paragraph}{\vspace{0.5mm}\bfseries}{}{0mm}{\paragraphcolor{\theparagraph~#1}}[{\vspace{0.5mm}}]
+\titleformat{\subparagraph}{\vspace{0.5mm}\bfseries}{}{0mm}{\subparagraphcolor{\thesubparagraph~#1}}[{\vspace{0.5mm}}]
+
+%% Title Spacing
+\titlespacing{\section}{0mm}{0mm}{0mm}
+\titlespacing{\subsection}{0mm}{0mm}{0mm}
+\titlespacing{\subsubsection}{0mm}{0mm}{0mm}
+\titlespacing{\paragraph}{0mm}{0mm}{0mm}
+\titlespacing{\subparagraph}{0mm}{0mm}{0mm}
+
+%define header and footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+\fancyhead[RO]{\AUTHOR\hspace{4pt}|\hspace{4pt}\INSTITUTE}
+\fancyhead[LO]{\TITLE}
+\usepackage[style=iso]{datetime2}
+\fancyfoot[RO]{\today}
+\renewcommand\headrulewidth{0pt}
+\renewcommand\footrulewidth{0pt}
+\headsep = -2pt
+\footskip = 0pt
+
+% no vertical distribution
+%% explanation: we copy the macro columnbreak to stdcolumnbreak
+%% we now redefine columnbreak to always fill up null space and then execute the standard columnbreak.
+\let\stdcolumnbreak\columnbreak
+\renewcommand\columnbreak{\vfill\null\stdcolumnbreak}
