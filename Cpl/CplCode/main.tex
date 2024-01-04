@@ -1,0 +1,443 @@
+\input{./ost-summary-template.tex}
+
+\newcommand{\TITLE}{C++ Code Overview}
+\newcommand{\AUTHOR}{Mona Panchaud}
+\newcommand{\INSTITUTE}{Ostschweizer Fachhochschule}
+
+
+\begin{document}
+\begin{multicols*}{3}
+
+
+\section{Calculator}
+\subsection{Calc}
+\begin{minted}[breaklines]{c++}
+// Calc.hpp
+#ifndef CALC_HPP
+#define CALC_HPP
+
+// <iostream> nur bei main() verwenden
+#include <iosfwd>
+
+auto calc(int x, int y, char symbol) -> int;
+
+auto calc(std::istream& in) -> int;
+#endif
+
+// Calc.cpp
+#include "Calc.hpp" // Eigener Header zuerst!
+
+#include <stdexcept>
+#include <istream> // <iostream> nur bei main()
+
+auto calc(int x, int y, char symbol) -> int {
+    switch(symbol) {
+        case '+':
+        return x + y;
+        case '-':
+        return x - y;
+        case '*':
+        return x * y;
+        case '/':
+        if(y == 0) {
+            throw std::invalid_argument{"Division By Zero is not allowed"};
+        }
+        return x / y;
+        case '%':
+        if(y == 0) {
+            throw std::invalid_argument{"Modulo By Zero is not allowed"};
+        }
+        return x % y;
+        default:
+        throw std::invalid_argument{"Unknown symbol"};
+    }
+}
+
+auto calc(std::istream& in) -> int { // Gut
+    int x{-1};
+    int y{-1};
+    char symbol{' '};
+    if (in >> x >> symbol >> y) {
+        return calc(x, y, symbol);
+    }
+    throw std::invalid_argument{"Invalid input"};
+}
+\end{minted}
+
+\subsection{Sevensegment}
+\begin{minted}[breaklines]{c++}
+// Sevensegment.hpp
+#ifndef SEVENSEGMENT_HPP_
+#define SEVENSEGMENT_HPP_
+
+#include <iosfwd>
+
+auto printLargeDigit(int digit, std::ostream& out) -> void;
+
+auto printLargeNumber(int number, std::ostream& out) -> void;
+
+auto printLargeError(std::ostream& out) -> void;
+#endif
+
+// Sevensegment.cpp
+#include "Sevensegment.hpp"
+
+#include <cstddef>
+#include <cstdlib>
+#include <ostream>
+#include <array>
+#include <algorithm>
+#include <vector>
+
+const size_t segmentSize = 5;
+
+std::array<std::string, segmentSize> const minus {
+    {
+        "   ",
+        "   ",
+        " - ",
+        "   ",
+        "   "
+    }
+}; // other arrays omitted for brevity
+
+
+auto printLargeDigit(int i, std::ostream& out) -> void {
+    auto digit = digits.at(i);
+    std::ranges::copy(digit, std::ostream_iterator<std::string>{out, "\n"});
+    // ist das gleiche wie:
+    // std::ranges::for_each(digit, [&out](auto el) {
+    //     out << el << '\n';
+    // });
+}
+
+auto printLargeNumber(int largeNumber, std::ostream& out) -> void {
+    std::vector<std::array<std::string, segmentSize>> largeNumberDigits{};
+    int potentiallyNegativeNumber = largeNumber;
+    largeNumber = abs(largeNumber);
+    while (largeNumber > 0) {
+        int digit = largeNumber % 10;
+        largeNumberDigits.insert(
+            largeNumberDigits.begin(),
+            digits.at(digit));
+        largeNumber /= 10;
+    }
+    if (potentiallyNegativeNumber < 0) {
+        largeNumberDigits.insert(
+            largeNumberDigits.begin(),
+            minus);
+    } else if (potentiallyNegativeNumber == 0) {
+        largeNumberDigits.push_back(digits.at(0));
+    }
+
+    for (size_t i = 0; i < segmentSize; i++) {
+        // auslagern
+        std::ranges::for_each(largeNumberDigits, [&out, i](auto digit) {
+            out << digit.at(i);
+        });
+        out << '\n';
+    }
+}
+
+auto printLargeError(std::ostream& out) -> void {
+    // auslagern
+    for (size_t i = 0; i < segmentSize; i++) {
+        std::ranges::for_each(error, [&out, i](auto errorLetter) {
+            out << errorLetter.at(i);
+        });
+        out << '\n';
+    }
+}
+\end{minted}
+
+\subsection{Pocketcalculator}
+\begin{minted}[breaklines]{c++}
+// Pocketcalculator.hpp
+#ifndef POCKETCALCULATOR_HPP
+#define POCKETCALCULATOR_HPP_
+
+#include <iosfwd>
+
+auto pocketcalculator(std::istream& input, std::ostream& output) -> void;
+#endif
+
+// Pocketcalculator.cpp
+#include "Pocketcalculator.hpp" // Eigener Header zuerst
+#include "Calc.hpp"
+#include "Sevensegment.hpp"
+
+#include <istream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+auto pocketcalculator(std::istream &input, std::ostream &out) -> void {
+    std::string calculationLine;
+    while(std::getline(input, calculationLine) && input.good()) {
+
+        std::istringstream calculationStream{calculationLine};
+
+        try {
+            auto result = calc(calculationStream);
+            if(std::abs(result) <= 99999999) {
+                printLargeNumber(result, out);
+            } else {
+                printLargeError(out);
+            }
+        } catch (std::invalid_argument const & e) { // Gut, per const& gefangen
+            printLargeError(out);
+        }
+    }
+}
+\end{minted}
+
+\section{Word}
+% TODO Replace <=> with lexicographical compare solution!!
+\begin{minted}[breaklines]{c++}
+// Word.hpp
+#include <algorithm>
+#include <cctype>
+#include <compare>
+#include <cstddef>
+#include <istream>
+#include <iterator>
+#include <ostream>
+#include <string>
+#include <vector>
+
+#ifndef WORD_HPP_
+#define WORD_HPP_
+
+namespace text {
+    class Word {
+        std::string characters{};
+
+    public:
+        Word();
+        explicit Word(std::string);
+
+        auto print(std::ostream& out) const -> void;
+
+        auto operator<=>(Word const& right) const -> std::weak_ordering {
+
+            auto minSize = std::min(characters.size(), right.characters.size());
+            for (size_t i = 0; i < minSize; i++) {
+                auto leftChar = std::tolower(characters.at(i));
+                auto rightChar = std::tolower(right.characters.at(i));
+                if (leftChar != rightChar) {
+                    return leftChar <=> rightChar;
+                }
+            }
+
+            if (characters.size() != right.characters.size()) {
+                return characters.size() <=> right.characters.size();
+            }
+
+            return std::weak_ordering::equivalent;
+        }
+
+        auto operator==(Word const& right) const -> bool {
+            return (*this <=> right) == std::weak_ordering::equivalent;
+        }
+    };
+
+    inline auto operator<<(std::ostream& out, Word const& word) -> std::ostream& {
+        word.print(out);
+        return out;
+    }
+
+    inline auto operator>>(std::istream& in, Word& word) -> std::istream& {
+        std::string wordInput{};
+        auto wordStarted = false;
+
+        while (in.good()) {
+            auto isValid = std::isalpha(in.peek());
+            if (isValid) {
+                wordInput.push_back(in.get());
+            } else if (wordInput.empty()) {
+                // consume characters at beginning of stream
+                in.ignore();
+            } else {
+                break;
+            }
+        }
+
+        if (!wordInput.empty()) {
+            word = Word{wordInput};
+        } else {
+            in.get(); // Stream to eof state.
+        }
+
+        return in;
+    }
+}
+#endif
+
+// Word.cpp
+#include <algorithm>
+#include <cctype>
+#include <iterator>
+#include <ostream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include "Word.hpp"
+
+namespace text {
+    Word::Word() : Word("EMPTY") {}
+
+    Word::Word(std::string word) {
+        if (word.empty()) {
+            throw std::invalid_argument{"Cannot create empty word"};
+        }
+
+        auto result = std::ranges::all_of(word.begin(), word.end(), [](auto letter) {
+            return std::isalpha(letter);
+        });
+        if (result) {
+            this->characters = word;
+        } else {
+            throw std::invalid_argument{"Cannot create word with non-alpha characters"};
+        }
+    }
+
+    auto Word::print(std::ostream& out) const -> void {
+      out << characters;
+    }
+}
+\end{minted}
+
+\section{IndexableSet}
+\begin{minted}[breaklines]{c++}
+#ifndef INDEXABLE_SET_HPP
+#define INDEXABLE_SET_HPP
+
+#include <cstdlib>
+#include <functional>  // für std::less
+#include <iterator>
+#include <set>
+#include <stdexcept>
+
+template <typename T, typename COMPARE = std::less<T>>
+class IndexableSet : public std::set<T, COMPARE> {
+public:
+    using container = std::set<T, COMPARE>;
+
+    // Take over other constructors
+    using container::container;
+
+    auto at(int pos) const -> T {
+        if ((pos > 0 && pos >= this->size()) ||
+        (pos < 0 && std::abs(pos) > this->size())) {
+            throw std::out_of_range{"Position out of range"};
+        }
+
+        auto iterator = this->cbegin();
+        if (pos < 0) {
+            iterator = this->cend();
+        }
+
+        std::advance(iterator, pos);
+        return *iterator;
+    }
+
+    auto operator[](int pos) const -> T { return at(pos); }
+
+    auto front() const -> T {
+        if (this->empty()) {
+            throw std::out_of_range{"Set is empty"};
+        }
+        return at(0);
+    }
+
+    auto back() const -> T {
+        if (this->empty()) {
+            throw std::out_of_range{"Set is empty"};
+        }
+        return at(this->size() - 1);
+    }
+};
+
+#endif
+\end{minted}
+
+\section{Garden Plan}
+\begin{minted}[breaklines]{c++}
+// Bed.hpp
+#ifndef BED_HPP
+#define BED_HPP
+
+#include <iosfwd>
+#include <string>
+
+struct Bed
+{
+    // -> Classes with virtual members require a virtual Destructor
+    virtual ~Bed() = default;
+
+    auto print(std::ostream & output) const -> void;
+
+    auto virtual pegs() const -> unsigned = 0;
+    auto virtual ropes() const -> double = 0;
+    auto virtual seeds() const -> double = 0;
+
+    protected:
+    auto virtual name() const -> std::string = 0;
+};
+
+#endif
+
+// Rectangle.hpp
+#ifndef RECTANGLE_HPP
+#define RECTANGLE_HPP
+
+#include "bed.hpp"
+
+struct Rectangle : Bed
+{
+    // For structs everything is public by default!
+    Rectangle(double shortSide, double longSide);
+
+    auto pegs() const -> unsigned override;
+    auto ropes() const -> double override;
+    auto seeds() const -> double override;
+
+private:
+    auto name() const -> std::string override;
+
+    double shortSide;
+    double longSide;
+};
+
+#endif
+
+// Rectangle.cpp
+#include "rectangle.hpp"
+
+Rectangle::Rectangle(double shortSide, double longSide)
+: shortSide{shortSide}
+, longSide{longSide}
+{
+}
+
+auto Rectangle::pegs() const -> unsigned {
+    return 4;
+}
+
+auto Rectangle::ropes() const -> double {
+    return 2 * shortSide + 2 * longSide;
+}
+
+auto Rectangle::seeds() const -> double {
+    return shortSide * longSide / 10.0;
+}
+
+auto Rectangle::name() const -> std::string {
+    return "Rectangle";
+}
+\end{minted}
+
+
+\end{multicols*}
+\end{document}
