@@ -192,7 +192,7 @@ auto pocketcalculator(std::istream &input, std::ostream &out) -> void {
 \end{minted}
 
 \section{Word}
-% TODO Replace <=> with lexicographical compare solution!!
+
 \begin{minted}[breaklines]{c++}
 // Word.hpp
 #include <algorithm>
@@ -209,67 +209,50 @@ auto pocketcalculator(std::istream &input, std::ostream &out) -> void {
 #define WORD_HPP_
 
 namespace text {
-    class Word {
-        std::string characters{};
+// ignored indentation for practical reasons
+class Word {
+    std::string characters{};
 
-    public:
-        Word();
-        explicit Word(std::string);
+public:
+    Word();
+    explicit Word(std::string);
 
-        auto print(std::ostream& out) const -> void;
+    auto print(std::ostream& out) const -> void;
 
-        auto operator<=>(Word const& right) const -> std::weak_ordering {
+    auto operator<=>(Word const& right) const -> std::weak_ordering;
+    auto operator==(Word const& right) const -> bool;
+};
 
-            auto minSize = std::min(characters.size(), right.characters.size());
-            for (size_t i = 0; i < minSize; i++) {
-                auto leftChar = std::tolower(characters.at(i));
-                auto rightChar = std::tolower(right.characters.at(i));
-                if (leftChar != rightChar) {
-                    return leftChar <=> rightChar;
-                }
-            }
+inline auto operator<<(std::ostream& out, Word const& word) -> std::ostream& {
+    word.print(out);
+    return out;
+}
 
-            if (characters.size() != right.characters.size()) {
-                return characters.size() <=> right.characters.size();
-            }
+inline auto operator>>(std::istream& in, Word& word) -> std::istream& {
+    std::string wordInput{};
+    auto wordStarted = false;
 
-            return std::weak_ordering::equivalent;
-        }
-
-        auto operator==(Word const& right) const -> bool {
-            return (*this <=> right) == std::weak_ordering::equivalent;
-        }
-    };
-
-    inline auto operator<<(std::ostream& out, Word const& word) -> std::ostream& {
-        word.print(out);
-        return out;
-    }
-
-    inline auto operator>>(std::istream& in, Word& word) -> std::istream& {
-        std::string wordInput{};
-        auto wordStarted = false;
-
-        while (in.good()) {
-            auto isValid = std::isalpha(in.peek());
-            if (isValid) {
-                wordInput.push_back(in.get());
-            } else if (wordInput.empty()) {
-                // consume characters at beginning of stream
-                in.ignore();
-            } else {
-                break;
-            }
-        }
-
-        if (!wordInput.empty()) {
-            word = Word{wordInput};
+    while (in.good()) {
+        auto isValid = std::isalpha(in.peek());
+        if (isValid) {
+            wordInput.push_back(in.get());
+        } else if (wordInput.empty()) {
+            // consume characters at beginning of stream
+            in.ignore();
         } else {
-            in.get(); // Stream to eof state.
+            break;
         }
-
-        return in;
     }
+
+    if (!wordInput.empty()) {
+        word = Word{wordInput};
+    } else {
+        in.get(); // Stream to eof state.
+    }
+
+    return in;
+}
+
 }
 #endif
 
@@ -303,7 +286,27 @@ namespace text {
     }
 
     auto Word::print(std::ostream& out) const -> void {
-      out << characters;
+        out << characters;
+    }
+
+    auto Word::operator<=>(Word const& right) const -> std::weak_ordering {
+        auto cmp_icase = [](unsigned char x, unsigned char y)
+        {
+            return std::toupper(x) <=> std::toupper(y);
+        };
+
+        auto res = std::lexicographical_compare_three_way(
+        characters.begin(),
+        characters.end(),
+        right.characters.begin(),
+        right.characters.end(),
+        cmp_icase
+        );
+        return res;
+    }
+
+    auto Word::operator==(Word const& right) const -> bool {
+        return (*this <=> right) == std::weak_ordering::equivalent;
     }
 }
 \end{minted}
