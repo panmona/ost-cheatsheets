@@ -6,11 +6,16 @@
 
 
 \begin{document}
+
 \begin{multicols*}{4}
 
 \includegraphics[width=0.6\linewidth]{traditional_lifecycle}
 
+% TODO Präsentations-Komponenten & welche andere art von komponenten???
+% TODO was sind vor/nachteile von spa?
+
 \section{SPA Overview}
+
 
 \begin{minipage}[c]{.6\linewidth}
     \begin{itemize}
@@ -50,6 +55,10 @@ Use \textbf{Anchors \#} or \textbf{window.history} API
 \end{itemize}
 
 \section{React}
+
+Komponenten werden in Virtual DOM gerendert.
+
+Virtual DOM Änderungen werden verglichen, erst dann werden wirkliche DOM Knoten erstellt.
 
 \subsection{JSX}
 JSX wird vom Präprozessor zu \mintinline{jsx}|React.createElement| Aufrufen umgewandelt => React import nötig!
@@ -172,28 +181,29 @@ const theme = useContext(ThemeContext);
     \item Reducer nur für Teil (Slice) von State-Tree zuständig
     \item Reducer werden zu Root Reducer kombiniert \mintinline{jsx}|combineReducers({balance, transactions})|
     \item Store wird mit Root Reducer erstellt \mintinline{jsx}|const store = createStore(rootReducer)|
+    \item Einfachere Handhabung mit Redux Toolkit! (\mintinline{js}|createSlice({...})| Funktion, Immer library)
 \end{itemize}
 
-\subsubsection{Redux Toolkit}
-\begin{minted}{js}
-const balanceSlice = createSlice({
-  name: "balance",
-  initialState: { value: 0 },
-  reducers: {
-    transfer: (state, action) => {
-      // "Immer" (Copy & Update Strategie)
-      state.value += action.payload.amount;
-    },
-  },
-});
-export const {transfer} =
-  balanceSlice.actions;
-\end{minted}
-
-\begin{itemize}
-    \item Daten von API mit Redux Thunk laden (Middleware)
-\end{itemize}
-% TODO vielleicht noch mehr zu Redux stuff, aber zuerst schauen wie viel andere sachen so an Platz brauchen
+% TODO für den Moment mal heraus gekürzt, da es nicht so nötig scheint wie andere Dinge
+%\subsubsection{Redux Toolkit}
+%\begin{minted}{js}
+%const balanceSlice = createSlice({
+%  name: "balance",
+%  initialState: { value: 0 },
+%  reducers: {
+%    transfer: (state, action) => {
+%      // "Immer" (Copy & Update Strategie)
+%      state.value += action.payload.amount;
+%    },
+%  },
+%});
+%export const {transfer} =
+%  balanceSlice.actions;
+%\end{minted}
+%
+%\begin{itemize}
+%    \item Daten von API mit Redux Thunk laden (Middleware)
+%\end{itemize}
 
 \subsubsection{Redux Vorteile/Nachteile}
 \begin{itemize}
@@ -206,6 +216,117 @@ export const {transfer} =
 \end{itemize}
 
 \section{Angular}
+für lang lebende \& komplexe Applikationen
+
+\subsection{Modules}
+\begin{minted}{ts}
+@NgModule ({
+  exports : [Type1, Type2, Module1]
+  /* The subset of declarations
+  that should be visible and usable in the
+  component templates of other modules. */
+  imports : [ CommonModule ], /* Specifies
+  modules from which exports / providers
+  should be imported into this module. */
+  declarations : [] , /* The view classes
+  that belong to this module
+  (components, directives and pipes ). */
+  providers : [] , /* Creators of services
+  that this module contributes to global
+  collection of services (DI Container);
+  they become accessible in all parts of app. */
+  bootstrap : [] /* Main application view
+  aka the root component . Only root module
+  should set this property. */
+})
+export class CoreModule { }
+\end{minted}
+
+\subsubsection{Group Exports}
+Um zu vermeiden, dass exportierte Komponenten zweimal angegeben werden müssen!
+\begin{minted}{ts}
+const EXPORTED_DECLARATIONS: any[] = [Type1];
+const INTERNAL_DECLARATIONS: any[] =
+  [...EXPORTED_DECLARATIONS, Type2 ];
+const EXPORTS: any[] =
+  [...EXPORTED_DECLARATIONS, Module1 ];
+
+declarations: INTERNAL_DECLARATIONS
+exports: EXPORTS
+\end{minted}
+
+\subsection{Components}
+\begin{itemize}
+    \item Components allow to separate UI logic from representation
+    \item Provide Information Hiding: Each Component declares a part of the UI
+    \item \lstinline|selector| used to embed component into other view. (tag name (should be prefixed to avoid collisions!) or CSS-selector (\mintinline{css}|'#topHeader'|))
+\end{itemize}
+
+\begin{minted}{ts}
+@Component({
+  selector: 'wed-navigation',
+  templateUrl: './navigation.component.html',
+  styleUrls: ['./navigation.component.css']
+})
+export class NavigationComponent {}
+\end{minted}
+
+\subsubsection{Template Syntax}
+\begin{itemize}
+    \item Almost all valid HTML5 syntax is valid template syntax. But \mintinline{html}|<script>| is forbidden!
+    \item HTML must be in valid format (\mintinline{html}|<p><h1></h1></p>| is not allowed)
+    \item Operators with side effects/chaining are prohibited in "\mintinline{html+ng2}|{{}}|" Expressions (\mintinline{ts}|++ -- new = += , ...|)
+\end{itemize}
+
+\subsubsection{Binding}
+\begin{description}
+    \item[One-way in] Model to view \mintinline{html+ng2}|<p>{{counter.team}}</p>|, \mintinline{html+ng2}|<img [attr.alt]="counter.team" src="...">|
+    \item[One-way call] View to Model (Event Binding) \mintinline{html+ng2}|(click)="counter.eventHandler($event)"|
+    \item[Two-way] \mintinline{html+ng2}|[(ngModel)]="counter.team"|
+\end{description}
+
+\subsubsection{Input and Output Properties}
+\begin{description}
+    \item[@Output()] component/directive fires bindable events
+    \item[@Input()] component/directive consumes bindable values
+\end{description}
+\mintinline{html+ng2}|<wed-nav (click)=".." [title]=".."></wed->|
+\begin{minted}{ts}
+@Component({/*omitted*/})
+export class NavigationComponent {
+    @Output() click =
+      new EventEmitter<any>();
+    @Input() title: string;
+}
+\end{minted}
+
+\subsection{Directives}
+\subsubsection{Attribute Directives}
+\mintinline{html+ng2}|<div [ngClass]="hasWarning ? 'warn' : '' ">|
+\subsubsection{Structural Directives}
+\begin{itemize}
+    \item Reshapes DOM structure (add, del, change elems)
+\end{itemize}
+\mintinline{html+ng2}|<div *ngIf="hasTitle"></div>|
+\mintinline{html+ng2}|<li *ngFor="let element of elements"></li>|
+
+
+\subsection{Template Reference Variables}
+Reference DOM Element within template. Can also be reference to Angular component or directive.
+\begin{minted}{html+ng2}
+<input placeholder="phone number" #phone>
+<button (click)="makeCall(phone.value)"
+  >Call</button>
+\end{minted}
+
+\subsection{Services}
+
+
+
+% TODO Welche Module? Was sollen sie machen?
+% TODO Was macht @Injectable
+% TODO Was macht providedIn: root? Wie gleiche Semantik erreichen wenn weggelassen?
+% TODO property werte mit moustache syntax in template rendern: wie?
 
 \section{ASP.NET}
 
