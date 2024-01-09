@@ -37,6 +37,13 @@ Browser fakes the URL change.
 \\
 Use \textbf{Anchors \#} or \textbf{window.history} API
 
+\subsection{Dependency Injection}
+\begin{itemize}
+    \item Reduced coupling between consumer and impl.
+    \item Classes relate to each other not directly but by interfaces
+    \item Allows flexible replacement of implementation
+\end{itemize}
+
 \subsection{Bundling with WebPack}
 \begin{description}
     \item[Entry] Startpunkt wo Webpack mit Bundling beginnt und
@@ -45,14 +52,6 @@ Use \textbf{Anchors \#} or \textbf{window.history} API
     \item[Loaders] Transformiert Dateien in Module. (\textit{module})
     \item[Mode] Enable built-in \textit{optimization} mechanisms.
 \end{description}
-
-% TODO probably move me somewhere else when we get to Angular. Or remove me completely
-\subsection{Dependency Injection}
-\begin{itemize}
-    \item Reduced coupling between consumer and impl.
-    \item Classes relate to each other not directly but by interfaces
-    \item Allows flexible replacement of implementation
-\end{itemize}
 
 \section{React}
 
@@ -234,9 +233,10 @@ für lang lebende \& komplexe Applikationen
   providers : [] , /* Creators of services
   that this module contributes to global
   collection of services (DI Container);
-  they become accessible in all parts of app. */
+  they become accessible in all parts
+  of app. */
   bootstrap : [] /* Main application view
-  aka the root component . Only root module
+  aka the root component. Only root module
   should set this property. */
 })
 export class CoreModule { }
@@ -322,6 +322,37 @@ Reference DOM Element within template. Can also be reference to Angular componen
 \subsection{Services}
 
 
+\subsubsection{providedIn: root}
+\begin{minted}{ts}
+@Injectable({ providedIn: 'root' })
+export class CounterService {}
+\end{minted}
+\mintinline{ts}|{providedIn: 'root'}| means service is registered for whole app. But this service is Tree-shakable.
+
+\subsubsection{forRoot()}
+% TODO option two: declare as part of ngModule, place into forRoot (explained in more detail later in the module)
+
+\subsection{Forms}
+Template Driven and Reactive.
+
+\subsubsection{Reactive Forms}
+Form and Validation logic in Controller. Easier to test. Handles async validations. Designed for "daily" use.
+
+\subsubsection{Template-driven Forms}
+Less code but validation logic in HTML. More intuitive, simpler. Useful for small forms.
+
+\begin{minted}[breaklines]{html+ng2}
+<input type="text" id="name" required
+  [(ngModel)]="model.name" name="name"
+  #nameField="ngModel">
+<div [hidden]="nameField.valid || nameField.pristine"
+  >Name required</div>
+
+<form (ngSubmit)="doLogin(sampleForm)" #sampleForm="ngForm">
+  <button type="submit" [disabled]="!sampleForm.form.valid"
+  >Submit</button>
+<form>
+\end{minted}
 
 % TODO Welche Module? Was sollen sie machen?
 % TODO Was macht @Injectable
