@@ -7,30 +7,24 @@
 
 \begin{document}
 
-\begin{multicols*}{4}
+\begin{multicols*}{2}
 
-\includegraphics[width=0.6\linewidth]{traditional_lifecycle}
+\includegraphics[width=\linewidth]{traditional_lifecycle}
 
 % TODO Präsentations-Komponenten & welche andere art von komponenten???
 % TODO was sind vor/nachteile von spa?
 
 \section{SPA Overview}
 
-
-\begin{minipage}[c]{.6\linewidth}
-    \begin{itemize}
-        \item Plain HTML/CSS/JS Code \\(no plugin)
-        \item No page reloads
-        \item Working back button
-        \item Bookmarkable Links
-        \item (limited) offline functionality
-        \item Uses RESTful Services \\for data access
-    \end{itemize}
-\end{minipage}%
-\begin{minipage}[c]{.4\linewidth}
-    \includegraphics[width=\linewidth]{spa_arch}
-\end{minipage}%
-\\ % important
+\begin{itemize}
+    \item Plain HTML/CSS/JS Code (no plugin)
+    \item No page reloads
+    \item Working back button
+    \item Bookmarkable Links
+    \item (limited) offline functionality
+    \item Uses RESTful Services for data access
+\end{itemize}
+\includegraphics[width=.6\linewidth]{spa_arch}
 
 \subsection{Routing}
 Browser fakes the URL change.
@@ -53,7 +47,6 @@ Use \textbf{Anchors \#} or \textbf{window.history} API
     \item[Mode] Enable built-in \textit{optimization} mechanisms.
 \end{description}
 
-% TODO diese section muss ich sehr wahrscheinlich noch fest kürzen!
 \section{React}
 
 Komponenten werden in Virtual DOM gerendert.
@@ -77,8 +70,7 @@ const menu = entries.map(entry =>
 \begin{minted}{jsx}
 { error &&
     <Message>Fehler: {error}</Message> }
-{ error ? <span>Fehler: {error}</span>
-        : <span>OK!</span>             }
+{ error ? <span>Fehler: {error}</span> : <span>OK!</span> }
 \end{minted}
 
 \subsubsection{Function \& Const}
@@ -86,8 +78,7 @@ const menu = entries.map(entry =>
 function HelloMessage(props) {
   return <div>Hi {props.name}</div>;
 }
-const HelloMessage =
-  (props) => <div>Hi {props.name}</div>;
+const HelloMessage = (props) => <div>Hi {props.name}</div>;
 \end{minted}
 
 \subsection{Mounting}
@@ -111,10 +102,8 @@ Alle Parameter sind in \textbf{props} Objekt. Read-only!
 
 \begin{minted}{jsx}
 const [value, setValue] = useState(0);
-const increment =
-  () => setCounter(counter + 1);
-return
-  <button onClick={increment}>Inc</button>
+const increment = () => setCounter(counter + 1);
+return <button onClick={increment}>Inc</button>
 \end{minted}
 
 \subsection{Formular}
@@ -125,8 +114,7 @@ function handleSubmit(event) {
   alert(username + "," + password);//ajax
 }
 // ...
-<button type="submit"
-  onClick={handleSubmit}>Login</button>
+<button type="submit" onClick={handleSubmit}>Login</button>
 \end{minted}
 
 \subsection{Lifecycle}
@@ -142,9 +130,7 @@ Zusammengehörender Code auf mehrere Methoden verteilt:
 useEffect(() => {
   const timerID = setInterval(
     () => setDate(new Date()), 1000);
-  return () => {
-    clearInterval(timerID)
-  }
+  return () => { clearInterval(timerID) }
 }, [])
 \end{minted}
 
@@ -184,26 +170,24 @@ const theme = useContext(ThemeContext);
     \item Einfachere Handhabung mit Redux Toolkit! (\mintinline{js}|createSlice({...})| Funktion, Immer library)
 \end{itemize}
 
-% TODO für den Moment mal heraus gekürzt, da es nicht so nötig scheint wie andere Dinge
-%\subsubsection{Redux Toolkit}
-%\begin{minted}{js}
-%const balanceSlice = createSlice({
-%  name: "balance",
-%  initialState: { value: 0 },
-%  reducers: {
-%    transfer: (state, action) => {
-%      // "Immer" (Copy & Update Strategie)
-%      state.value += action.payload.amount;
-%    },
-%  },
-%});
-%export const {transfer} =
-%  balanceSlice.actions;
-%\end{minted}
-%
-%\begin{itemize}
-%    \item Daten von API mit Redux Thunk laden (Middleware)
-%\end{itemize}
+\subsubsection{Redux Toolkit}
+\begin{minted}{js}
+const balanceSlice = createSlice({
+  name: "balance",
+  initialState: { value: 0 },
+  reducers: {
+    transfer: (state, action) => {
+      // "Immer" (Copy & Update Strategie)
+      state.value += action.payload.amount;
+    },
+  },
+});
+export const {transfer} = balanceSlice.actions;
+\end{minted}
+
+\begin{itemize}
+    \item Daten von API mit Redux Thunk laden (Middleware)
+\end{itemize}
 
 \subsubsection{Redux Vorteile/Nachteile}
 \begin{itemize}
@@ -219,26 +203,13 @@ const theme = useContext(ThemeContext);
 für lang lebende \& komplexe Applikationen
 
 \subsection{Modules}
-\begin{minted}{ts}
+\begin{minted}[breaklines]{ts}
 @NgModule ({
-  exports : [Type1, Type2, Module1]
-  /* The subset of declarations
-  that should be visible and usable in the
-  component templates of other modules. */
-  imports : [ CommonModule ], /* Specifies
-  modules from which exports / providers
-  should be imported into this module. */
-  declarations : [] , /* The view classes
-  that belong to this module
-  (components, directives and pipes ). */
-  providers : [] , /* Creators of services
-  that this module contributes to global
-  collection of services (DI Container);
-  they become accessible in all parts
-  of app. */
-  bootstrap : [] /* Main application view
-  aka the root component. Only root module
-  should set this property. */
+  exports : [Type1, Type2, Module1] // The subset of declarations that should be visible and usable in the component templates of other modules.
+  imports : [ CommonModule ], // Specifies modules from which exports / providers should be imported into this module.
+  declarations : [] , // The view classes that belong to this module (components, directives and pipes ).
+  providers : [] , // Creators of services that this module contributes to global collection of services (DI Container); they become accessible in all parts of app.
+  bootstrap : [] // Main application view aka the root component. Only root module should set this property.
 })
 export class CoreModule { }
 \end{minted}
@@ -249,12 +220,21 @@ Um zu vermeiden, dass exportierte Komponenten zweimal angegeben werden müssen!
 const EXPORTED_DECLARATIONS: any[] = [Type1];
 const INTERNAL_DECLARATIONS: any[] =
   [...EXPORTED_DECLARATIONS, Type2 ];
-const EXPORTS: any[] =
-  [...EXPORTED_DECLARATIONS, Module1 ];
+const EXPORTS: any[] = [...EXPORTED_DECLARATIONS, Module1];
 
 declarations: INTERNAL_DECLARATIONS
 exports: EXPORTS
 \end{minted}
+
+\subsubsection{Lazy Modules}
+Make sure to not reference classes/components/... from Lazy Module from eagerly loaded application part. Otherwise it is already loaded!
+
+\subsubsection{Module Types}
+\begin{description}
+    \item[Root/App Module] Provide entry point/bootstrap component for app
+    \item[Feature Modules] Specify clear boundaries between application features
+
+\end{description}
 
 \subsection{Components}
 \begin{itemize}
@@ -281,8 +261,9 @@ export class NavigationComponent {}
 
 \subsubsection{Binding}
 \begin{description}
-    \item[One-way in] Model to view \mintinline{html+ng2}|<p>{{counter.team}}</p>|, \mintinline{html+ng2}|<img [attr.alt]="counter.team" src="...">|
-    \item[One-way call] View to Model (Event Binding) \mintinline{html+ng2}|(click)="counter.eventHandler($event)"|
+    \item[One-way in] Model to view \mintinline{html+ng2}|<p>{{counter.team}}</p>|, \\
+      \mintinline{html+ng2}|<img [attr.alt]="counter.team" src="...">|
+    \item[One-way call] View to Model (Event Binding) \\ \mintinline{html+ng2}|(click)="counter.eventHandler($event)"|
     \item[Two-way] \mintinline{html+ng2}|[(ngModel)]="counter.team"|
 \end{description}
 
@@ -295,8 +276,7 @@ export class NavigationComponent {}
 \begin{minted}{ts}
 @Component({/*omitted*/})
 export class NavigationComponent {
-    @Output() click =
-      new EventEmitter<any>();
+    @Output() click = new EventEmitter<any>();
     @Input() title: string;
 }
 \end{minted}
@@ -309,7 +289,7 @@ Do something in lifecycle: Implement hook methods. (interface e.g. \lstinline|On
 \subsubsection{Content Projection (like props.children)}
 Single-Slot: \mintinline{html+ng2}|<ng-content></ng-content>|
 
-Multi-Slot:\\
+Multi-Slot:
 \mintinline[breaklines]{html+ng2}|<ng-content select='menu'></ng-content>| \\
 (or with tags: \mintinline{html+ng2}|select='[wed-title]'|)
 
@@ -321,6 +301,7 @@ Multi-Slot:\\
     \item Reshapes DOM structure (add, del, change elems)
 \end{itemize}
 \mintinline{html+ng2}|<div *ngIf="hasTitle"></div>|
+
 \mintinline{html+ng2}|<li *ngFor="let element of elements"></li>|
 
 
@@ -328,8 +309,7 @@ Multi-Slot:\\
 Reference DOM Element within template. Can also be reference to Angular component or directive.
 \begin{minted}{html+ng2}
 <input placeholder="phone number" #phone>
-<button (click)="makeCall(phone.value)"
-  >Call</button>
+<button (click)="makeCall(phone.value)">Call</button>
 \end{minted}
 
 \subsection{Services}
@@ -342,9 +322,8 @@ export class CounterService {}
 \end{minted}
 \mintinline{ts}|{providedIn: 'root'}| means service is registered for whole app. But this service is Tree-shakable.
 
-\subsubsection{forRoot()}
-% TODO option two: declare as part of ngModule, place into forRoot (explained in more detail later in the module)
-
+\subsubsection{forRoot() / forChild()}
+Create forRoot and forChild methods in module. In forRoot place service into providers. In forChild have no providers. forRoot should only be called from the AppModule / or CoreModule as it's only imported from AppModule.
 \subsubsection{Async Services}
 Use EventEmitter: \mintinline{ts}|this.xChanged.emit(this.x);|
 \begin{minted}[breaklines]{ts}
@@ -369,8 +348,7 @@ Less code but validation logic in HTML. More intuitive, simpler. Useful for smal
   >Name required</div>
 
 <form (ngSubmit)="doLogin(sampleForm)" #sampleForm="ngForm">
-  <button type="submit" [disabled]="!sampleForm.form.valid"
-  >Submit</button>
+  <button type="submit" [disabled]="!sampleForm.form.valid">Submit</button>
 <form>
 \end{minted}
 
@@ -386,6 +364,22 @@ Less code but validation logic in HTML. More intuitive, simpler. Useful for smal
 Intercept HTTP Requests with \textit{HttpInterceptor} for e.g. Authorization header.
 
 \subsection{Angular Routing}
+Define routes for a Module in their own RoutingModule.
+Use RouterModule.\textbf{forRoot}(routes) only once on top level. Use \textbf{forChild}(routes) for sub-routing on all sub-levels.
+\textbf{forRoot} contains all directive, given routes \textit{AND} singleton router service instance. \textbf{forChild} contains only directives, routes.
+
+Use \mintinline{html+ng2}|<a routerLink="/home">| for links.
+
+\mintinline{html+ng2}|<router-outlet>| defines where router should display views.
+Can also be used in child.
+
+\subsubsection{Route Configuration}
+Router uses first-match-wins! More specific should be placed above less specific routes. Wildcard should abe last route! Use guards if route should only be activated in certain circumstances.
+
+\textbf{pathMatch: 'full'} exact match.
+\textbf{redirectTo: '/heroes'} redirect.
+\textbf{path: '**'} wildcard.
+\textbf{path: 'hero/:id'} maps e.g. /hero/42.
 
 % TODO Welche Module? Was sollen sie machen?
 % TODO Was macht providedIn: root? Wie gleiche Semantik erreichen wenn weggelassen?
