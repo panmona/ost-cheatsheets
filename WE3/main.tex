@@ -231,9 +231,19 @@ Make sure to not reference classes/components/... from Lazy Module from eagerly 
 
 \subsubsection{Module Types}
 \begin{description}
-    \item[Root/App Module] Provide entry point/bootstrap component for app
-    \item[Feature Modules] Specify clear boundaries between application features
+    \item[Root/App] Provide entry point/bootstrap component for app. Imports BrowserModule. No exports.
+    \item[Feature] Specify clear boundaries between application features. Allows to assign dev responsibilities to different teams.
+    \item[Shared] Common components/directives/pipes and shares them with feature module. Don't specify app-wide singleton services here! (lazy-loaded module makes its own copy)
+    \item[Core] Keeps Root Module clean. Contains components/directives/pipes used by Root Module. Globally used services can be declared here. Only Root Module should import this module.
+\end{description}
 
+\paragraph{Feature Module Sub Types}
+\begin{description}
+    \item[Domain] Deliver UI dedicated to particular app domain
+    \item[Routing] Specifies routing specific configuration settings of Feature (or Root) module
+    \item[Service] Provides utility services such as data access and messaging
+    \item[Widget] Makes components/directive/pipes available to external modules
+    \item[Lazy] Represents lazily loaded Feature Modules. (Routed Modules)
 \end{description}
 
 \subsection{Components}
@@ -352,17 +362,6 @@ Less code but validation logic in HTML. More intuitive, simpler. Useful for smal
 <form>
 \end{minted}
 
-\subsection{Observables / HttpClient}
-2 types with same API but different behavior:
-
-\textbf{Hot Observables} for sequence of events, shared among all subscribers.
-\textbf{Cold Observables} start running on subscribption (e.g. web requests), not shared among subscribers, automatically closed after task is finished
-
-\textbf{Data Resource Services} should provide Observable interface.
-\textbf{Business Layer Services} subscribe to the provided Observables. Allows caching, filtering, data aggregation and other business logic.
-
-Intercept HTTP Requests with \textit{HttpInterceptor} for e.g. Authorization header.
-
 \subsection{Angular Routing}
 Define routes for a Module in their own RoutingModule.
 Use RouterModule.\textbf{forRoot}(routes) only once on top level. Use \textbf{forChild}(routes) for sub-routing on all sub-levels.
@@ -381,8 +380,46 @@ Router uses first-match-wins! More specific should be placed above less specific
 \textbf{path: '**'} wildcard.
 \textbf{path: 'hero/:id'} maps e.g. /hero/42.
 
-% TODO Welche Module? Was sollen sie machen?
-% TODO Was macht providedIn: root? Wie gleiche Semantik erreichen wenn weggelassen?
+\subsection{Observables / HttpClient}
+2 types with same API but different behavior:
+
+\textbf{Hot Observables} for sequence of events, shared among all subscribers.
+\textbf{Cold Observables} start running on subscribption (e.g. web requests), not shared among subscribers, automatically closed after task is finished
+
+\textbf{Data Resource Services} should provide Observable interface.
+\textbf{Business Layer Services} subscribe to the provided Observables. Allows caching, filtering, data aggregation and other business logic.
+
+Intercept HTTP Requests with \textit{HttpInterceptor} for e.g. Authorization header.
+
+\subsection{Streaming based business services}
+It is possible to pull RxJS through all layers (Ui / Service / Data Resource). But in the end, this will result in async sections within the UI \(\Rightarrow\) Complex data management.
+
+\subsection{Pipe Operator}
+Pipes are good choice for small transformations. Can be chained.
+
+\textbf{Custom Pipe}: Also add to declarations of module. Use @Pipe decorator.
+
+async pipes make UI more complex.
+
+\textbf{Predefined Pipes}: AsyncPipe, DecimalPipe, DatePipe, PercentPipe.
+
+\textbf{No Filter / OrderBy pipe}. As these would need to be impure and therefore would perform very poorly. And they prevent aggressive minifcation. Do filtering/sorting inside controller.
+
+\begin{minted}{html+ng2}
+<p>{{counter.team | uppercase}}</p>
+<p>{{counter.date | date:'longDate'}}</p>
+\end{minted}
+
+\begin{description}
+    \item[Pure] By default. Only executed when Angular detects \textit{pure change} to input expression. Changes within composite objects/values are ignored.
+    \item[Impure] Executed on \textit{every} component change detection cycle (every keystroke, mouse-move or other event). To reduce processing time caching is often seen inside impure pipes.
+\end{description}
+
+\subsection{Styling}
+Selectors of SCSS file are local to that component! By default achieved with prepropressing. Native (Shadow DOM) implementation can be activated with changing encapsulation tag in @Component metadata.
+
+\subsection{AOT}
+Automatic when using production build. In Dev Build: uses JIT compiler by default which is delivered to client.
 
 \section{ASP.NET}
 
