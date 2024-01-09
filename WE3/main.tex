@@ -53,6 +53,7 @@ Use \textbf{Anchors \#} or \textbf{window.history} API
     \item[Mode] Enable built-in \textit{optimization} mechanisms.
 \end{description}
 
+% TODO diese section muss ich sehr wahrscheinlich noch fest kürzen!
 \section{React}
 
 Komponenten werden in Virtual DOM gerendert.
@@ -300,6 +301,18 @@ export class NavigationComponent {
 }
 \end{minted}
 
+\subsubsection{Component Lifecycle}
+ctor -> ngOnChanges -> ngOninit -> ngDoCheck -> ngOnDestroy
+
+Do something in lifecycle: Implement hook methods. (interface e.g. \lstinline|OnInit| not needed but recommended)
+
+\subsubsection{Content Projection (like props.children)}
+Single-Slot: \mintinline{html+ng2}|<ng-content></ng-content>|
+
+Multi-Slot:\\
+\mintinline[breaklines]{html+ng2}|<ng-content select='menu'></ng-content>| \\
+(or with tags: \mintinline{html+ng2}|select='[wed-title]'|)
+
 \subsection{Directives}
 \subsubsection{Attribute Directives}
 \mintinline{html+ng2}|<div [ngClass]="hasWarning ? 'warn' : '' ">|
@@ -320,7 +333,7 @@ Reference DOM Element within template. Can also be reference to Angular componen
 \end{minted}
 
 \subsection{Services}
-
+\lstinline|@Injectable| marks class as an Injectable instance
 
 \subsubsection{providedIn: root}
 \begin{minted}{ts}
@@ -331,6 +344,13 @@ export class CounterService {}
 
 \subsubsection{forRoot()}
 % TODO option two: declare as part of ngModule, place into forRoot (explained in more detail later in the module)
+
+\subsubsection{Async Services}
+Use EventEmitter: \mintinline{ts}|this.xChanged.emit(this.x);|
+\begin{minted}[breaklines]{ts}
+// subscribe in ngOnInit and unsubscribe in ngOnDestroy
+this.xService.xChanged.subscribe((x: XModel) => {this.x = x;});
+\end{minted}
 
 \subsection{Forms}
 Template Driven and Reactive.
@@ -354,10 +374,21 @@ Less code but validation logic in HTML. More intuitive, simpler. Useful for smal
 <form>
 \end{minted}
 
+\subsection{Observables / HttpClient}
+2 types with same API but different behavior:
+
+\textbf{Hot Observables} for sequence of events, shared among all subscribers.
+\textbf{Cold Observables} start running on subscribption (e.g. web requests), not shared among subscribers, automatically closed after task is finished
+
+\textbf{Data Resource Services} should provide Observable interface.
+\textbf{Business Layer Services} subscribe to the provided Observables. Allows caching, filtering, data aggregation and other business logic.
+
+Intercept HTTP Requests with \textit{HttpInterceptor} for e.g. Authorization header.
+
+\subsection{Angular Routing}
+
 % TODO Welche Module? Was sollen sie machen?
-% TODO Was macht @Injectable
 % TODO Was macht providedIn: root? Wie gleiche Semantik erreichen wenn weggelassen?
-% TODO property werte mit moustache syntax in template rendern: wie?
 
 \section{ASP.NET}
 
