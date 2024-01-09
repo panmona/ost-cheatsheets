@@ -61,7 +61,7 @@ const menu = entries.map(entry =>
     <h1>{entry.title.toUpperCase()}</h1>
     <p className="lg">{entry.subtitle}</p>
   </ListItem>
-)
+);
 \end{minted}
 
 \subsubsection{Conditionals}
@@ -75,10 +75,10 @@ const menu = entries.map(entry =>
 \subsubsection{Function \& Const}
 \begin{minted}{jsx}
 function HelloMessage(props) {
-  return <div>Hello {props.name}</div>;
+  return <div>Hi {props.name}</div>;
 }
 const HelloMessage =
-  (props) => <div>Hello {props.name}</div>;
+  (props) => <div>Hi {props.name}</div>;
 \end{minted}
 
 \subsection{Mounting}
@@ -97,6 +97,7 @@ Alle Parameter sind in \textbf{props} Objekt. Read-only!
     \item \textbf{useState} immer in derselben Reihenfolge aufrufen!
     \item Keine von Props abgeleiteten Daten im State!
     \item Props bevorzugen!
+    \item Nur Dinge, die für GUI gebraucht werden in State
 \end{itemize}
 
 \begin{minted}{jsx}
@@ -107,7 +108,102 @@ return
   <button onClick={increment}>Inc</button>
 \end{minted}
 
-Weiter ab Reat Folie 44
+\subsection{Formular}
+\begin{minted}{jsx}
+function handleSubmit(event) {
+  // Damit Browser nicht Formular absendet
+  event.preventDefault();
+  alert(username + "," + password);//ajax
+}
+// ...
+<button type="submit"
+  onClick={handleSubmit}>Login</button>
+\end{minted}
+
+\subsection{Lifecycle}
+Zusammengehörender Code auf mehrere Methoden verteilt:
+
+\textit{Mount}: constructor -> render -> componentDidMount
+
+\textit{Update}: render -> componentDidUpdate
+
+\textit{Unmount}: componentWillUnmount
+
+\begin{minted}{jsx}
+useEffect(() => {
+  const timerID = setInterval(
+    () => setDate(new Date()), 1000);
+  return () => {
+    clearInterval(timerID)
+  }
+}, [])
+\end{minted}
+
+\subsection{Router}
+\begin{minted}{jsx}
+<BrowserRouter> // all routes inside tag
+<Routes>
+  <Route index element={<Home/>} />
+  <Route path="/help" element ={<Help/>}/>
+</Routes> // auch verschachtelung möglich
+// don't use a tags now:
+<Link to="/help">Help/Link>
+\end{minted}
+
+\subsection{Context}
+\begin{minted}{jsx}
+const ThemeContext = // param is default
+  React.createContext(themes.light);
+<ThemeContext.Provider value={themes.dark}>
+</ThemeContext.Provider>
+const theme = useContext(ThemeContext);
+\end{minted}
+\begin{itemize}
+    \item ideal für globale read-only Props wie Themes
+    \item Callbacks können auch durchgereicht werden
+    \item Code wird bei vielen Context unübersichtlich
+\end{itemize}
+
+\subsection{Redux}
+\begin{itemize}
+    \item Action: \mintinline{javascript}|{ type: TRANSFER, amount: 100 }|
+    \item Reducer erstellt neuen State-Tree mit Daten in Action
+    \item Reducer sind pure Funktionen (no side effects)
+    \item Reducer nur für Teil (Slice) von State-Tree zuständig
+    \item Reducer werden zu Root Reducer kombiniert \mintinline{jsx}|combineReducers({balance, transactions})|
+    \item Store wird mit Root Reducer erstellt \mintinline{jsx}|const store = createStore(rootReducer)|
+\end{itemize}
+
+\subsubsection{Redux Toolkit}
+\begin{minted}{js}
+const balanceSlice = createSlice({
+  name: "balance",
+  initialState: { value: 0 },
+  reducers: {
+    transfer: (state, action) => {
+      // "Immer" (Copy & Update Strategie)
+      state.value += action.payload.amount;
+    },
+  },
+});
+export const {transfer} =
+  balanceSlice.actions;
+\end{minted}
+
+\begin{itemize}
+    \item Daten von API mit Redux Thunk laden (Middleware)
+\end{itemize}
+% TODO vielleicht noch mehr zu Redux stuff, aber zuerst schauen wie viel andere sachen so an Platz brauchen
+
+\subsubsection{Redux Vorteile/Nachteile}
+\begin{itemize}
+    \item Bessere Übersicht: State ist an einer Stelle
+    \item Zustand kann serialisiert werden, ermöglicht Server Rendering
+    \item Besseres Debugging da explizite Stateänderungen
+    \item Einfachere React Komponenten!
+    \item Hat \textbf{Overhead}! \(\Rightarrow\) Wenn kaum State existiert, der von mehreren Komponenten verwendet wird, lohnt sich Redux Overhead nicht
+    \item Nicht jeder State muss ins Redux.\\Formulardaten/UI-State kann auch React State sein
+\end{itemize}
 
 \section{Angular}
 
