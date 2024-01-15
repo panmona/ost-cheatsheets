@@ -9,9 +9,8 @@
 
 \begin{multicols*}{2}
 
-\includegraphics[width=\linewidth]{traditional_lifecycle}
+\includegraphics[width=0.8\linewidth]{traditional_lifecycle}
 
-% TODO Präsentations-Komponenten & welche andere art von komponenten???
 % TODO was sind vor/nachteile von spa?
 
 \section{SPA Overview}
@@ -53,16 +52,18 @@ Komponenten werden in Virtual DOM gerendert.
 
 Virtual DOM Änderungen werden verglichen, erst dann werden wirkliche DOM Knoten erstellt.
 
+Präsentations Komponenten \& Container Komponenten (stateful, Logik)
+
 \subsection{JSX}
 JSX wird vom Präprozessor zu \mintinline{jsx}|React.createElement| Aufrufen umgewandelt => React import nötig!
 \begin{minted}{jsx}
 import React from 'react'
 
 const menu = entries.map(entry =>
-  <ListItem as="a" to={`/${entry.path}`}>
-    <h1>{entry.title.toUpperCase()}</h1>
-    <p className="lg">{entry.subtitle}</p>
-  </ListItem>
+<ListItem as="a" to={`/${entry.path}`}>
+<h1>{entry.title.toUpperCase()}</h1>
+<p className="lg">{entry.subtitle}</p>
+</ListItem>
 );
 \end{minted}
 
@@ -421,7 +422,152 @@ Selectors of SCSS file are local to that component! By default achieved with pre
 \subsection{AOT}
 Automatic when using production build. In Dev Build: uses JIT compiler by default which is delivered to client.
 
+\section{PWA}
+\textit{Alternative}: Native Applikation. Nicht alle Besucher von Webseite möchten App installieren. 50\% der Personen installieren keine neue App im Monat. Wenige Personen benutzen viele Apps pro Monat.
+
+\textit{Zurück Knopf}: Wenn PWA in Standalone Fenster (Fullscreen) geöffnet wird auf UX achten. Browserspezifische Features gehen verloren.
+
+\begin{description}
+    \item[Safe] HTTPS. Push-Api nur über HTTPS möglich. (ausser localhost)
+    \item[Responsive] UI für alle Grössen
+    \item[Progressive] neuste APIs nutzen für beste UX ohne ältere Browser zu ignorieren (Progressive Enhancement)
+    \item[Linkable] Teilen von Inhalten ohne, dass Sharing Partner App installieren muss
+    \item[Discoverable] Webseite soll über Suchmaschinen auffindbar sein.
+    \item[Installable] Web Applikation mit Icon auf Startbildschirm speicherbar. (Icon in Web App Manifest, start\_url)
+    \item[Network Independent] Webseite soll auch mit schlechter/langsamer/gar keiner Verbindung funktionieren
+    \item[Re-engageable] Verbindung zum Benutzer der Seite soll aufgenommen werden können, obwohl Benutzer Seite nicht geöffnet hat (Service Workers, Push-Api)
+\end{description}
+
+\section{MobX}
+\begin{tabular}{ll}
+    \textbf{Redux} & \textbf{Mobx}  \\
+    Single Store & Multiple Store \\
+    Immutable Store &  Mutable Store\\
+    Normalized Date & Denormalized Data \\
+    Unidirectional data flow & Unidirectional data flow (empfohlen)
+\end{tabular}
+
 \section{ASP.NET}
+\textbf{Convention over configuration} Die Anzahl der Entscheidungen, wird verringert, was zu mehr Simplizität führt, ohne notwendigerweise an Flexibilität zu verlieren. Nachteile: Magie, evt Schwer anzupassen falls Anforderungen nicht ins Schema passen
+
+\textbf{Multi-Threading} Besitzt Thread Pool (Grösse konfigurierbar). Wählt für jeden Request einen Thread aus Pool.  Thread solange blockiert bis Request abgeschlossen (oder vorzeitig zurückgegeben: async/await) Keine geteilten Daten in Controller / Services halten (z.B. Static Variablen, ASP.NET instanziert für jeden Request neuen Controller)
+
+\textbf{Front Controller} Routing
+\textbf{MVVM} Kommunikation zwischen View und ViewModel über Bindings. View: Markup Language, was User sieht. ViewModel: Value Converter, UI-Logik (Drag\&Drop) Model: Daten, Services, Domain Logik
+\textbf{wwwroot} statische Inhalte der Websiete \textbf{appsettings.json} Einstellungen der Webseite (Connection String zur DB) \textbf{Program.cs} Middleware/DI Konfiguration
+
+\subsection{Middleware}
+Request durchläuft Stack von Middelwares (Reihenfolge relevant!)
+
+\begin{minted}[breaklines]{cs}
+app.Use(async (context, next) => {
+    Console.WriteLine("Handling request");
+    await next.Invoke();
+    Console.WriteLine("Finished handling request.");
+});
+app.Map("/logging", builder => {
+    builder.Run(async (context) => {
+        await context.Response.WriteAsync("Hello World!");
+    });
+});
+app.Run(async (context) => {
+    await context.Response.WriteAsync("Hello World!");
+});
+app.UseMiddleware<MyMiddleware>();
+public class MyMiddleware {
+    public MyMiddleware(RequestDelegate next, ISomething something) { }
+    public async Task Invoke(HttpContext context) {
+        await _next.Invoke(context);
+    }
+}
+\end{minted}
+
+\subsection{Dependency Injection}
+Komponenten dürfen sich \textit{nur} Komponenten mit gleicher oder längerer Laufzeit injecten lassen! (InvalidOperationException)
+
+Bei Registration von mehreren gleichen Services, wird der letzte genommen.
+\textbf{Transient} Each time they are requested \textbf{Scoped} Once per request \textbf{Singleton} first time they are requested, same instance afterwards
+
+\subsection{Razor Pages}
+\begin{minted}{aspx-cs}
+@page
+@model HelloWorldModel
+<h1>@Model.HelloWorld</h1>
+@{ var total = 7; }
+<p>The value of your account is: @total </p>
+@{
+    var weekDay = DateTime.Now.DayOfWeek;
+    var greetingMessage = "Today is: " + weekDay;
+}
+<p>The greeting is: @greetingMessage</p>
+\end{minted}
+
+\subsubsection{Pages Routing}
+Mapping von URL nach Convention. Page wird in /pages gesucht.
+\textit{/add} \(\Rightarrow\) \textit{/pages/add.cshtml}, \textit{/order/add} \(\Rightarrow\) \textit{/pages/order/add.cshtml}, \textit{/ajax} \(\Rightarrow\) \textit{/pages/ajax/index.cshtml}
+
+Auf Parameter zugreifen in Razor: \mintinline{aspx-cs}|@RouteData.Values["id"]|
+
+\subsubsection{Pages ViewModel (PageModel)}
+cshtml.cs. Basis Klasse mit Hilfsfunktionen. Pro HTTP-Verb eine Funktion, die davor aufgerufen wird (OnGet, OnPost, ...)
+
+\begin{minted}{cs}
+public class HelloWorldModel : PageModel {
+  public string EchoText {get;set;}
+  public long Times {get;set;}
+  public void OnPost(string echoText, long times) {
+    EchoText = echoText;
+    Times = times;
+  }
+  // oder als Klasse
+  public void OnPost(EchoModel data) { Data = data; }
+  // oder mit [BindProperty], kein OnPost nötig
+  // bei Get: [BindProperty(SupportsGet = true)]
+}
+\end{minted}
+
+\subsubsection{Ajax}
+
+Weitere Handlers in PageModel für Ajax möglich:
+\begin{minted}{cs}
+public IActionResult OnPostEcho(string echoText) {
+    return this.Content(echoText);
+}
+public IActionResult OnGetAutocomplete(string text) {
+    return new JsonResult(_citiesService.GetCities(text));
+}
+\end{minted}
+Können mit [METHOD] /[Page]?handler=[HandlerName] aufgerufen werden (Bsp: GET /Ajax?handler=autocomplete).
+Erlaubte Rückgabewerte vom Typ \lstinline|IActionResult|. (JsonResult, NotFoundResult, RedirectToPage). Hilfsmethoden: Page(), Partial(), Content()
+
+
+
+\begin{minted}[breaklines]{aspx-cs}
+// asp-page-handler setzt "action" Attribute vom Form!
+<form asp-page="Ajax" asp-page-handler="Echo" id="echoForm">
+  <input name="echoText"/>
+  <input type="submit"/>
+</form>
+// Submit muss mit Javascript gehandlet werden:
+const formData = new FormData(args.target); // Anti Forgery Token
+const result = await fetch(args.target.action, { method: "post", body: formData });
+
+// JQuery Unobtrusive
+<form asp-page="Ajax" asp-page-handler="Echo" id="echoForm" data-ajax="true"
+data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#echoOutput">
+  <input name="echoText"/>
+  <input type="submit"/>
+</form>
+\end{minted}
+
+\subsubsection{Layout}
+\textbf{@RenderBody()} wo Content Page gerendert werden soll.
+
+\textbf{@RenderSection("Nav", required: false)} Wo spezifische Section gerendert werden soll. Definiert mit \lstinline|@section Nav {...}|
+
+\textbf{\_ViewStart.cshtml} Code welcher vor Razor Files ausgeführt wird. Definiert zB Layout für alle Pages \lstinline|@{ Layout = "_Layout"; }|
+
+\section{Web Assembly}
 
 \end{multicols*}
 \end{document}
