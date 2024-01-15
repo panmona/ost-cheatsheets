@@ -673,6 +673,9 @@ var hasClaim = User.HasClaim(ClaimTypes.Role, "Admin");
 InMemory Datenbank wird beibehalten für alle Tests. Lösung: Jeder Test erhält einen anderen DatenbankNamen (\_dbId).
 
 \section{Blazor}
+\textbf{Blazor Server} Server Side Rendering, Kommunikation mit WebSockets bei Änderungen. Braucht keine Daten APIs (\(\Rightarrow\) schnelle Entwicklung), braucht mehr Ressourcen auf Server (1c, 4GB RAM pro 5000k User), in Zukunft: Islands of Interactivity
+
+\textbf{Blazor Web Assembly} C\# zu WebAssembly kompiliert. Am Besten bei klassischen SPAs. Viel initialer Payload wie sonst auch bei SPAs (~2MB)
 
 \section{Web Assembly}
 \textbf{Web Assembly} Stack Machine
