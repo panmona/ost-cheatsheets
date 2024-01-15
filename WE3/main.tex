@@ -11,18 +11,16 @@
 
 \includegraphics[width=0.8\linewidth]{traditional_lifecycle}
 
-% TODO was sind vor/nachteile von spa?
-
 \section{SPA Overview}
+Plain HTML/CSS/JS Code (no plugin), No page reloads,
+Working back button,
+Bookmarkable Links,
+(limited) offline functionality,
+Uses RESTful Services for data access
 
-\begin{itemize}
-    \item Plain HTML/CSS/JS Code (no plugin)
-    \item No page reloads
-    \item Working back button
-    \item Bookmarkable Links
-    \item (limited) offline functionality
-    \item Uses RESTful Services for data access
-\end{itemize}
+\textbf{Vorteile}: Usability, keine Page reloads, schneller nach Erstladen (Daten über REST).
+\textbf{Nachteile}: Kein direkter Hardware-Zugriff, längere Erstladezeit, Applikationen tendenziell ineffizienter, komplexere Deployment-Strategien, SEO eingeschränkt, JavaScript Abhängigkeit
+
 \includegraphics[width=.6\linewidth]{spa_arch}
 
 \subsection{Routing}
@@ -423,6 +421,11 @@ Selectors of SCSS file are local to that component! By default achieved with pre
 Automatic when using production build. In Dev Build: uses JIT compiler by default which is delivered to client.
 
 \section{PWA}
+\textit{Unterschied zu SPA}: SPAs konzentrieren sich auf Verbesserung der
+Benutzererfahrung auf einer einzigen Seite, indem Inhalte dynamisch nachgeladen
+werden, kein page refresh. PWAs erweitern das Konzept mit oben genannten
+Features, um Erfahrung zu schaffen, die nativen Apps ähnelt.
+
 \textit{Alternative}: Native Applikation. Nicht alle Besucher von Webseite möchten App installieren. 50\% der Personen installieren keine neue App im Monat. Wenige Personen benutzen viele Apps pro Monat.
 
 \textit{Zurück Knopf}: Wenn PWA in Standalone Fenster (Fullscreen) geöffnet wird auf UX achten. Browserspezifische Features gehen verloren.
@@ -495,11 +498,6 @@ Bei Registration von mehreren gleichen Services, wird der letzte genommen.
 <h1>@Model.HelloWorld</h1>
 @{ var total = 7; }
 <p>The value of your account is: @total </p>
-@{
-    var weekDay = DateTime.Now.DayOfWeek;
-    var greetingMessage = "Today is: " + weekDay;
-}
-<p>The greeting is: @greetingMessage</p>
 \end{minted}
 
 \subsubsection{Pages Routing}
@@ -548,7 +546,7 @@ Erlaubte Rückgabewerte vom Typ \lstinline|IActionResult|. (JsonResult, NotFound
   <input name="echoText"/>
   <input type="submit"/>
 </form>
-// Submit muss mit Javascript gehandlet werden:
+// Submit muss mit Javascript gehandelt werden:
 const formData = new FormData(args.target); // Anti Forgery Token
 const result = await fetch(args.target.action, { method: "post", body: formData });
 
@@ -567,7 +565,130 @@ data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#echoOutput">
 
 \textbf{\_ViewStart.cshtml} Code welcher vor Razor Files ausgeführt wird. Definiert zB Layout für alle Pages \lstinline|@{ Layout = "_Layout"; }|
 
+\subsubsection{Validation}
+1. Annotieren des ViewModels mit e.g. [Required], [StringLength(60, MinimumLength=3)], [RegularExpression("...")], [DataType(DataType.Date)].
+
+2. Validation ins DOM einfügen und Jquery validation, Jquery validation unobrusive scripts einbinden.
+\begin{minted}{aspx-cs}
+<div asp-validation-summary="ModelOnly"></div>
+<label asp-for="Item.Name"></label>
+<input asp-for="Item.Name" />
+<span asp-validation-for="Item.Name></span>
+<input type="submit" value="Create" />
+\end{minted}
+
+3. Server seitige validierung
+\begin{minted}{cs}
+[HttpPost]
+public ActionResult Index(Order order) {
+    if (ModelState.IsValid) {
+        order.CustomerId = User.Identity.GetUserId();
+        db.Orders.Add(order);
+        db.SaveChanges();
+        return View("OrderOk", order);
+    }
+    return BadRequest();
+}
+\end{minted}
+
+\subsection{REST Api}
+[HttpMethod] (also HttpGet, HttpPost etc.) Attribut ist bei allen Actions required!
+% java is wrong but highlighting gets confused with Route api/[controller] attribute
+\begin{minted}{java}
+[Route("api/[controller]")]
+public class ValuesController : Controller {
+    [HttpGet("{id}")]
+    public Value Get(int id) {
+        return _valueService.Get(id); ;
+    }
+    [HttpPost]
+    // auch direkt [Route("foo")] / [Route("/foo")] möglich
+    // oder [HttpPost("foo")] / [HttpPost("/foo")]
+    public IActionResult Post([FromBody]Value value) {
+        _valueService.Add(value);
+        // Location Response Header korrekt setzen auf
+        // bspw. localhost:52055/api/Values/4
+        return new CreatedAtActionResult("Get", "Values",
+          new {id = _valueService.GetId(value)}, value)
+    } }
+\end{minted}
+
+\subsection{Swagger}
+Spezifikation für Dokumentation von REST-Apis, Prog-sprach unabhängig
+\begin{minted}{cs}
+services.AddSwaggerGen(); // hier kann noch mehr konfiguriert werden.
+// bspw: C# XML Kommentare in Swagger oder eine Beschreibung
+app.UseSwagger();
+app.UseSwaggerUI(options => {
+  options.SwaggerEndpoint("/swagger/v1/swagger.json", "XYZ");
+});
+\end{minted}
+
+\subsection{Exception Handling}
+Globalen ErrorHandler definieren für generisches Error Handling, mittels \lstinline|app.UseExceptionHandler(errorApp => errorApp.Run(async context => ...))|, Middleware setzt dann StatusCode und eine für den Client aufbereitete Response (json).
+
+Exception auslösen wenn ModelState nicht valid mittels Filter.
+Registration mit: \lstinline|services.AddMvc(opt => { opt.Filters.Add(new XAttribute()) }|
+\begin{minted}{cs}
+public class ValidateModelAttribute : ActionFilterAttribute {
+  public override void OnActionExecuting(
+    ActionExecutingContext context) {
+    if (!context.ModelState.IsValid) {
+      throw new ServiceException(
+        ServiceExceptionType.ForbiddenByRule);
+    }
+  } }
+\end{minted}
+
+\subsection{ASP.NET Identity}
+Folgende Klassen über DI injectable: \textbf{UserManager<ApplicationUser>}, \textbf{RoleManager<IdentityRole>}, \textbf{IAuthorizationService}: Verantwortlich für Validation von Policies, \textbf{SignInManager}
+
+\textbf{[Authorize]}: User muss authentifiziert sein. \textbf{[AllowAnonymous]}: Für spezifische Action anonymen Zugriff erlauben
+\textbf{Manuell überprüfen}: User.Identity.IsAuthenticated
+
+Ein \textbf{Claim} ist Statement über User von IdP ausgestellt
+
+\textit{[Authorize(Roles="Admin,PowerUser")]}, \textit{[Authorize(Policy="OlderThan18")]}
+
+\begin{minted}{cs}
+var user = await _userManager.GetUserAsync(User);
+var isInRole = await _userManager.IsInRoleAsync(user, "Admin");
+var result = await _authorizationService
+  .AuthorizeAsync(User, null, "Founders");
+var hasClaim = User.HasClaim(ClaimTypes.Role, "Admin");
+\end{minted}
+\begin{lstlisting}
+@inject UserManager<ApplicationUser> manager;
+@inject ApplicationDbContext context;
+@{
+    var user = await manager.GetUserAsync(User);
+    if (user != null && await manager.IsInRoleAsync(user, "Administrator")){
+        // what should be shown for the Admin
+    } }
+\end{lstlisting}
+
+\subsection{Integration Test}
+\textbf{Pitfalls}: \lstinline|.AddApplicationPart(typeof(Startup).Assembly)| wird für Auffinden von Controllern benötigt.
+\lstinline|services.AddDbContext<ApplicationDbContext>(options=>options.UseInMemoryDatabase(_dbId)|
+InMemory Datenbank wird beibehalten für alle Tests. Lösung: Jeder Test erhält einen anderen DatenbankNamen (\_dbId).
+
+\section{Blazor}
+
 \section{Web Assembly}
+\textbf{Web Assembly} Stack Machine
+\textbf{WASM} Compiled Web Assembly, Can be transformed back to WAT
+\textbf{WAT} Text Based Web Assembly \lstinline|WebAssembly.instantiateStreaming()| compiles and instantiates a WebAssembly module
+\textbf{Instance}: Module paired with all state (incl. Memory, Table and imported values)
+\textbf{Memory}: Resizable Array Buffer, at most one Memory is supported
+\begin{minted}{wast}
+(module
+  (func (export "addTwo") (param i32 i32) (result i32)
+    local.get 0
+    local.get 1
+    i32.add)
+  )
+\end{minted}
+
 
 \end{multicols*}
 \end{document}
