@@ -9,8 +9,6 @@
 
 \begin{multicols*}{2}
 
-\includegraphics[width=0.8\linewidth]{traditional_lifecycle}
-
 \section{SPA Overview}
 Plain HTML/CSS/JS Code (no plugin), No page reloads,
 Working back button,
@@ -53,7 +51,7 @@ Virtual DOM Änderungen werden verglichen, erst dann werden wirkliche DOM Knoten
 Präsentations Komponenten \& Container Komponenten (stateful, Logik)
 
 \subsection{JSX}
-JSX wird vom Präprozessor zu \mintinline{jsx}|React.createElement| Aufrufen umgewandelt => React import nötig!
+JSX kombiniert JS und XML. JSX wird vom Präprozessor zu \mintinline{jsx}|React.createElement| Aufrufen umgewandelt => React import nötig!
 \begin{minted}{jsx}
 import React from 'react'
 
@@ -168,21 +166,6 @@ const theme = useContext(ThemeContext);
     \item Store wird mit Root Reducer erstellt \mintinline{jsx}|const store = createStore(rootReducer)|
     \item Einfachere Handhabung mit Redux Toolkit! (\mintinline{js}|createSlice({...})| Funktion, Immer library)
 \end{itemize}
-
-\subsubsection{Redux Toolkit}
-\begin{minted}{js}
-const balanceSlice = createSlice({
-  name: "balance",
-  initialState: { value: 0 },
-  reducers: {
-    transfer: (state, action) => {
-      // "Immer" (Copy & Update Strategie)
-      state.value += action.payload.amount;
-    },
-  },
-});
-export const {transfer} = balanceSlice.actions;
-\end{minted}
 
 \begin{itemize}
     \item Daten von API mit Redux Thunk laden (Middleware)
@@ -418,7 +401,7 @@ async pipes make UI more complex.
 Selectors of SCSS file are local to that component! By default achieved with prepropressing. Native (Shadow DOM) implementation can be activated with changing encapsulation tag in @Component metadata.
 
 \subsection{AOT}
-Automatic when using production build. In Dev Build: uses JIT compiler by default which is delivered to client.
+Automatic when using production build. In Dev Build: uses JIT compiler by default which is delivered to client (big payload).
 
 \section{PWA}
 \textit{Unterschied zu SPA}: SPAs konzentrieren sich auf Verbesserung der
@@ -498,6 +481,48 @@ Bei Registration von mehreren gleichen Services, wird der letzte genommen.
 <h1>@Model.HelloWorld</h1>
 @{ var total = 7; }
 <p>The value of your account is: @total </p>
+\end{minted}
+
+\subsection{BMI Beispiel}
+\begin{minted}{cs}
+// Startup
+public void ConfigureServices(IServiceCollection services) {
+    services.AddSingleton<IBmiService, BmiService>();
+}
+
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
+    app.UseStaticFiles();
+    app.UseRouting();
+    app.UseEndpoints(endpoints =>
+    {
+        endpoints.MapRazorPages();
+    }); }
+\end{minted}
+\begin{minted}{aspx-cs}
+// cshtml
+@page
+@model IndexModel
+<form asp-page="Index" method="post">
+  <label asp-for="@Model.Bmi.Height"></label>
+  <input asp-for="@Model.Bmi.Height" name="height">
+  <label asp-for="@Model.Bmi.Weight"></label>
+  <input asp-for="@Model.Bmi.Weight" name="weight"/>
+<button type="submit">Submit</button>
+</form>
+@if(Model.Resultat.HasValue) {
+  <p>Resultat: @Model.Resultat</p>
+}
+\end{minted}
+\begin{minted}{cs}
+// cshtml.cs
+public void OnGet(Bmi bmi) {
+  Bmi = bmi;
+  Resultat = _bmiService.Calculate(bmi);
+}
+public void OnPost(Bmi bmi) {
+    Bmi = bmi;
+    Resultat = _bmiService.Calculate(bmi);
+}
 \end{minted}
 
 \subsubsection{Pages Routing}
@@ -636,8 +661,7 @@ public class ValidateModelAttribute : ActionFilterAttribute {
     if (!context.ModelState.IsValid) {
       throw new ServiceException(
         ServiceExceptionType.ForbiddenByRule);
-    }
-  } }
+    } } }
 \end{minted}
 
 \subsection{ASP.NET Identity}
@@ -667,7 +691,7 @@ var hasClaim = User.HasClaim(ClaimTypes.Role, "Admin");
     } }
 \end{lstlisting}
 
-\subsection{Integration Test}
+\subsection{Integration Tests}
 \textbf{Pitfalls}: \lstinline|.AddApplicationPart(typeof(Startup).Assembly)| wird für Auffinden von Controllern benötigt.
 \lstinline|services.AddDbContext<ApplicationDbContext>(options=>options.UseInMemoryDatabase(_dbId)|
 InMemory Datenbank wird beibehalten für alle Tests. Lösung: Jeder Test erhält einen anderen DatenbankNamen (\_dbId).

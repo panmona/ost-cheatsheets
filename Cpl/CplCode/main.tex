@@ -365,6 +365,25 @@ public:
 #endif
 \end{minted}
 
+\section{SafeVector}
+\begin{minted}[breaklines]{c++}
+template<typename T>
+struct SafeVector : std::vector<T> {
+    using container = std::vector<T>;
+    using std::vector<T>::vector; // to inherit constructors!
+    using size_type = typename container::size_type;
+    using reference = typename container::reference;
+    using const_reference = typename container::const_reference;
+    reference operator[](size_type index) {
+        return this->at(index);
+    }
+    const_reference operator[](size_type index) const {
+        return this->at(index);
+    }
+    // should also provide front/back with empty() check
+};
+\end{minted}
+
 \section{Garden Plan}
 \begin{minted}[breaklines]{c++}
 // Bed.hpp
